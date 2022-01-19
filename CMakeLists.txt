@@ -4,7 +4,7 @@ project(hkedengine)
 set(CMAKE_CXX_STANDARD 17)
 
 set(SOURCE_FILES main.cpp dep/GLAD/src/glad.c)
-set(HEADER_FILES shader.h)
+set(HEADER_FILES engine/shader.h engine/graphics.cpp engine/graphics.h dep/stb_image.h)
 
 include_directories(${PROJECT_SOURCE_DIR}/dep/glfw/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/glm/include)
