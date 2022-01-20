@@ -64,9 +64,9 @@ public:
     Texture();
     explicit Texture(string path);
 
+    unsigned int id;
 private:
 
-    unsigned int id;
     void load();
 };
 

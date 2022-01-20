@@ -233,6 +233,7 @@ void Texture::load() {
 
 // Binds a texture
 void Texture::use() const {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, id);
 }
 
