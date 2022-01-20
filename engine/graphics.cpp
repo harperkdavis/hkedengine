@@ -82,6 +82,66 @@ Mesh Mesh::cube(float size) {
     });
 }
 
+// Simple rect mesh
+Mesh Mesh::rect(float sizex, float sizey, float sizez) {
+    return Mesh({
+        // Front
+        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
+
+        // Back
+        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
+
+        // Left
+        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
+
+        // Right
+        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
+
+        // Top
+        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(0, 1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
+
+        // Bottom
+        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(0, -1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
+    }, {
+        1, 0, 3,
+        1, 3, 2,
+
+        5, 4, 7,
+        5, 7, 6,
+
+        9, 8, 11,
+        9, 11, 10,
+
+        13, 12, 15,
+        13, 15, 14,
+
+        17, 16, 19,
+        17, 19, 18,
+
+        21, 20, 23,
+        21, 23, 22,
+
+    });
+}
+
 // Mesh constructor
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices) {
     this->vertices = vertices;
@@ -189,6 +249,25 @@ Material::Material(Shader& shader, string texture, glm::vec4 color) : shader(sha
     this->color = color;
 }
 
+// Generates a view matrix
+glm::mat4 Camera::viewMatrix() const {
+    return modelMatrix(position, rotation, glm::vec3(-1, -1, 1));
+}
+
+// Generates a projection matrix
+glm::mat4 Camera::projectionMatrix() const {
+    return glm::perspective(fov, 1200.0f / 800.0f, nearPlane, farPlane);
+}
+
+// Camera constructor
+Camera::Camera(glm::vec3 position, glm::vec3 rotation, float fov, float nearPlane, float farPlane) {
+    this->position = position;
+    this->rotation = rotation;
+    this->fov = fov;
+    this->nearPlane = nearPlane;
+    this->farPlane = farPlane;
+}
+
 // Gets the raw model matrix of the thing
 glm::mat4 Thing::getLocalModelMatrix() const {
     return modelMatrix(position, rotation, scale);
@@ -204,12 +283,15 @@ glm::mat4 Thing::getModelMatrix() const {
 
 // Draws a thing
 void Thing::draw() {
+    if (Camera::mainCamera == nullptr) {
+        return;
+    }
     material.texture.use();
     material.shader.use();
 
     material.shader.setMat4("model", getModelMatrix());
-    material.shader.setMat4("projection", glm::perspective(glm::radians(80.0f), 1200.0f / 800.0f, 0.1f, 1000.0f));
-    material.shader.setMat4("view", glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -3)));
+    material.shader.setMat4("projection", Camera::mainCamera->projectionMatrix());
+    material.shader.setMat4("view", Camera::mainCamera->viewMatrix());
 
     material.shader.setVec4("color", material.color);
 

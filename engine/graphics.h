@@ -34,6 +34,7 @@ struct Vertex {
 class Mesh {
 public:
     static Mesh cube(float size);
+    static Mesh rect(float sizex, float sizey, float sizez);
 
     vector<Vertex> vertices;
     vector<unsigned int> indices;
@@ -83,7 +84,15 @@ public:
 
 class Camera {
 public:
-    static Camera* mainCamera;
+    inline static Camera* mainCamera = nullptr;
+    glm::vec3 position;
+    glm::vec3 rotation;
+    float fov, nearPlane, farPlane;
+
+    glm::mat4 viewMatrix() const;
+    glm::mat4 projectionMatrix() const;
+
+    Camera(glm::vec3 position, glm::vec3 rotation, float fov, float nearPlane, float farPlane);
 
 };
 
