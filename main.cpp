@@ -43,6 +43,7 @@ int main() {
         return -1;
     }
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(0);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -51,42 +52,32 @@ int main() {
     }
 
     glViewport(0, 0, WIDTH, HEIGHT);
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
 
-    Mesh square = Mesh({Vertex(glm::vec3(-0.5, 0.5, 0), glm::vec2(0, 0), glm::vec3(0, 0, 0)),
-                          Vertex(glm::vec3(-0.5, -0.5, 0), glm::vec2(0, 1), glm::vec3(0, 0, 0)),
-                          Vertex(glm::vec3(0.5, -0.5, 0), glm::vec2(1, 1), glm::vec3(0, 0, 0)),
-                          Vertex(glm::vec3(0.5, 0.5, 0), glm::vec2(1, 0), glm::vec3(0, 0, 0))},
-                         {1, 0, 3, 1, 2, 3});
+    Shader simpleShader = Shader("../shaders/simplev.glsl", "../shaders/simplef.glsl");
 
-    Shader simpleShader = Shader("../shaders/simpleVertex.glsl", "../shaders/simpleFragment.glsl");
+    Material mat = Material(simpleShader, "../resources/image.jpg");
+    Thing square = Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1));
 
-    int imgwidth, imgheight, imgnrChannels;
-    unsigned char *imgdata = stbi_load("../textures/image.jpg", &imgwidth, &imgheight, &imgnrChannels, 0);
-
-    unsigned int texture;
-    glGenTextures(1, &texture);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, imgwidth, imgheight, 0, GL_RGB, GL_UNSIGNED_BYTE, imgdata);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    stbi_image_free(imgdata);
-
+    int framecount = 0, second = 0;
     // Game loop
     while(!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         float timeValue = glfwGetTime();
-        simpleShader.setFloat("time", timeValue);
-        simpleShader.use();
+        if (timeValue > second + 1) {
+            std::cout << "FPS: " << framecount << std::endl;
+            second = floor(timeValue);
+            framecount = 0;
+        } else {
+            framecount++;
+        }
 
-        square.draw(simpleShader);
+        square.draw();
 
         glfwPollEvents();
         glfwSwapBuffers(window);
