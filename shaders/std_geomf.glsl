@@ -15,6 +15,6 @@ void main() {
     gNormal = normalize(vertexNormal);
 
     gAlbedoSpec.rgb = texture(diffuse, vertexUV).rgb;
-    gAlbedoSpec.a = 0;
+    gAlbedoSpec.a = 1;
 
 }

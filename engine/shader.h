@@ -106,6 +106,12 @@ public:
         glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
     }
 
+    void setDirLight(const std::string &name, glm::vec3 direction, glm::vec4 color, float intensity) const {
+        setVec3(name + ".direction", direction);
+        setVec4(name + ".color", color);
+        setFloat(name + ".intensity", intensity);
+    }
+
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------

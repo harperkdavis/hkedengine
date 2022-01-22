@@ -23,41 +23,41 @@ glm::mat4 modelMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
 // Simple cube mesh
 Mesh Mesh::cube(float size) {
     return Mesh({
-        // Front
-        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(size, -size, size), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(size, size, size), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
-
         // Back
-        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
+
+        // Front
+        Vertex(glm::vec3(size, size, size), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
 
         // Left
-        Vertex(glm::vec3(-size, size, -size), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, size, size), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
 
         // Right
-        Vertex(glm::vec3(size, size, size), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, -size, size), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(size, size, -size), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
 
         // Top
-        Vertex(glm::vec3(size, size, size), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
 
         // Bottom
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, -1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(size, -size, size), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(-1, -1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(-1, -1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, -1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, -1, 0), glm::vec2(1, 0)),
 
     }, {
 
@@ -83,43 +83,43 @@ Mesh Mesh::cube(float size) {
 }
 
 // Simple rect mesh
-Mesh Mesh::rect(float sizex, float sizey, float sizez) {
+Mesh Mesh::rect(float xSize, float ySize, float zSize) {
     return Mesh({
-        // Front
-        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
-
         // Back
-        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
+
+        // Front
+        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
 
         // Left
-        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
 
         // Right
-        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
 
         // Top
-        Vertex(glm::vec3(sizex, sizey, sizez), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(sizex, sizey, -sizez), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-sizex, sizey, -sizez), glm::vec3(0, 1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-sizex, sizey, sizez), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(0, 1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
 
         // Bottom
-        Vertex(glm::vec3(-sizex, -sizey, sizez), glm::vec3(0, -1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-sizex, -sizey, -sizez), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(sizex, -sizey, -sizez), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(sizex, -sizey, sizez), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(-1, -1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(-1, -1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(-1, -1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(-1, -1, 0), glm::vec2(1, 0)),
     }, {
         1, 0, 3,
         1, 3, 2,
@@ -219,11 +219,11 @@ void Texture::load() {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
     glBindTexture(GL_TEXTURE_2D, id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -252,7 +252,7 @@ Material::Material(Shader& shader, string texture, glm::vec4 color) : shader(sha
 
 // Generates a view matrix
 glm::mat4 Camera::viewMatrix() const {
-    return modelMatrix(position, rotation, glm::vec3(-1, -1, 1));
+    return modelMatrix(position, rotation, glm::vec3(1, 1, 1));
 }
 
 // Generates a projection matrix
@@ -305,4 +305,14 @@ Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotati
     this->position = position;
     this->rotation = rotation;
     this->scale = scale;
+}
+
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.2f, 1.0f, -0.7f), glm::vec4(1, 1, 1, 1), 1)) {}
+
+void Scene::draw() {
+    for (Thing t : things) {
+        if (t.visible) {
+            t.draw();
+        }
+    }
 }

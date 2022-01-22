@@ -34,7 +34,7 @@ struct Vertex {
 class Mesh {
 public:
     static Mesh cube(float size);
-    static Mesh rect(float sizex, float sizey, float sizez);
+    static Mesh rect(float xSize, float ySize, float zSize);
 
     vector<Vertex> vertices;
     vector<unsigned int> indices;
@@ -70,6 +70,7 @@ private:
     void load();
 };
 
+// Class for storing material information
 class Material {
 public:
 
@@ -80,6 +81,19 @@ public:
     Material(Shader& shader);
     Material(Shader& shader, string texture);
     Material(Shader& shader, string texture, glm::vec4 color);
+};
+
+struct DirectionalLight {
+public:
+    glm::vec3 direction;
+    glm::vec4 color;
+    float intensity;
+
+    DirectionalLight(glm::vec3 direction, glm::vec4 color, float intensity) {
+        this->direction = glm::normalize(direction);
+        this->color = color;
+        this->intensity = intensity;
+    }
 };
 
 class Camera {
@@ -103,6 +117,8 @@ public:
     glm::vec3 rotation;
     glm::vec3 scale;
 
+    bool visible = true;
+
     Thing* parent = nullptr;
 
     Mesh mesh;
@@ -114,6 +130,24 @@ public:
     void draw();
 
     Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+
+};
+
+// Class for a scene tree
+class Scene {
+public:
+    vector<Thing> things;
+
+    glm::vec4 ambientLight = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    DirectionalLight dirLight;
+
+    Thing& add(Thing thing) {
+        return things.emplace_back(thing);
+    }
+
+    void draw();
+
+    Scene();
 
 };
 

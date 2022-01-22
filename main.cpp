@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <random>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -11,13 +12,50 @@
 const int WIDTH = 1200;
 const int HEIGHT = 800;
 
+const int SSAO_KERNEL_SIZE = 64;
+
 using namespace std;
+
+const float MOUSE_SENSITIVITY = 0.04f;
 
 // Input processing
 void processInput(GLFWwindow *window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 }
+
+// Linear intERPolation function (aka the most beautiful function of all time)
+float lerp(float a, float b, float f) {
+    return a + f * (b - a);
+}
+
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+// Render an on screen quad
+void renderQuad() {
+    if (quadVAO == 0) {
+        float quadVertices[] = {
+                -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+                -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+                1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+                1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+        };
+        glGenVertexArrays(1, &quadVAO);
+        glGenBuffers(1, &quadVBO);
+        glBindVertexArray(quadVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
+        glEnableVertexAttribArray(2);
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    }
+    glBindVertexArray(quadVAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindVertexArray(0);
+}
+
+
 
 // The main function
 int main() {
@@ -31,7 +69,7 @@ int main() {
 
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    string title = "HKED Engine 0.1.0-alpha.3";
+    string title = "HKED Engine 0.1.0-alpha.4";
 
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, &title[0], nullptr, nullptr);
     if (window == nullptr) {
@@ -48,12 +86,16 @@ int main() {
         return -1;
     }
 
+    stbi_set_flip_vertically_on_load(true);
+
+    // Finish up window
     glViewport(0, 0, WIDTH, HEIGHT);
     glEnable(GL_DEPTH_TEST);
 
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     // Enable face culling
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
 
     // Setup framebuffers
     unsigned int gBuffer;
@@ -67,6 +109,8 @@ int main() {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, gPosition, 0);
 
     // Normal
@@ -101,13 +145,12 @@ int main() {
         std::cout << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-    Camera playerCamera = Camera(glm::vec3(0, 0, -2), glm::vec3(0, 0, 0), 80.0f, 0.1f, 1000.0f);
+    Camera playerCamera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 80.0f, 0.1f, 1000.0f);
     Camera::mainCamera = &playerCamera;
 
     // Load shaders
-    Shader simpleShader = Shader("../shaders/simplev.glsl", "../shaders/simplef.glsl");
     Shader geometryShader = Shader("../shaders/std_geomv.glsl", "../shaders/std_geomf.glsl");
-    Shader lightingShader = Shader("../shaders/std_lightv.glsl", "../shaders/std_lightf.glsl");
+    Shader lightingShader = Shader("../shaders/stdv.glsl", "../shaders/std_lightf.glsl");
 
     // Setup default values
     lightingShader.use();
@@ -115,28 +158,63 @@ int main() {
     lightingShader.setInt("gNormal", 1);
     lightingShader.setInt("gAlbedoSpec", 2);
 
-    // Create render quad
-    Mesh renderQuad = Mesh({
-        Vertex(glm::vec3(-1, 1, 0), glm::vec3(0, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-1, -1, 0), glm::vec3(0, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(1, -1, 0), glm::vec3(0, 0, 0), glm::vec2(1, 0)),
-        Vertex(glm::vec3(1, 1, 0), glm::vec3(0, 0, 0), glm::vec2(1, 1)),
-    }, {
-        1, 0, 3,
-        1, 3, 2,
-    });
+    // Create the main scene
+    Scene scene = Scene();
+
+    Material mat = Material(geometryShader, "../resources/test.png");
+    scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(2.0f), mat, glm::vec3(4, -1, 3), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    Thing& square = scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
 
-    Material mat = Material(geometryShader, "../resources/image.jpg");
-    Thing square = Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1));
-
+    double mouseX = 0, mouseY = 0;
+    double deltaTime = 0;
     // Game loop
     while(!glfwWindowShouldClose(window)) {
+        double startFrame = glfwGetTime();
 
         // Process any inputs
         processInput(window);
 
-        square.rotation.y = glfwGetTime() * 16;
+        glfwGetCursorPos(window, &mouseX, &mouseY);
+
+        playerCamera.rotation.x = -mouseY * MOUSE_SENSITIVITY;
+        playerCamera.rotation.y = -mouseX * MOUSE_SENSITIVITY;
+
+        if (playerCamera.rotation.x > 85) {
+            playerCamera.rotation.x = 85;
+        }
+        if (playerCamera.rotation.x < -85) {
+            playerCamera.rotation.x = -85;
+        }
+
+        float& rotY = playerCamera.rotation.y;
+        float playerSpeed = 4.0f * (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 4.0f : 1.0f);
+
+        // Handle basic player movement
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+            playerCamera.position += glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+            playerCamera.position -= glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+            playerCamera.position += glm::vec3(sin(-glm::radians(rotY) + M_PI / 2), 0, cos(-glm::radians(rotY) + M_PI / 2)) * (float) deltaTime * playerSpeed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+            playerCamera.position -= glm::vec3(sin(-glm::radians(rotY) + M_PI / 2), 0, cos(-glm::radians(rotY) + M_PI / 2)) * (float) deltaTime * playerSpeed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+            playerCamera.position += glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+            playerCamera.position -= glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
+        }
+
+        // vstd::cout << playerCamera.position.x << ", " << playerCamera.position.y << ", " << playerCamera.position.z << std::endl;
+
+
+        square.rotation.y = glfwGetTime() * 64;
 
         // Clear
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -146,23 +224,30 @@ int main() {
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        square.draw();
+        scene.draw();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Lighting Pass
         lightingShader.use();
+
+        lightingShader.setVec3("viewPos", playerCamera.position);
+        lightingShader.setVec4("ambientLight", scene.ambientLight);
+        lightingShader.setDirLight("dirLight", scene.dirLight.direction, scene.dirLight.color, scene.dirLight.intensity);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, gPosition);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, gNormal);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-        renderQuad.draw();
-
+        renderQuad();
 
         glfwPollEvents();
         glfwSwapBuffers(window);
+
+        deltaTime = glfwGetTime() - startFrame;
     }
 
     glfwTerminate();
