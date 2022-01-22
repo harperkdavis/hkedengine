@@ -77,6 +77,7 @@ public:
     Shader& shader;
     Texture texture;
     glm::vec4 color;
+    float emission = 0;
 
     Material(Shader& shader);
     Material(Shader& shader, string texture);

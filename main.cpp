@@ -13,6 +13,8 @@
 const int WIDTH = 1200;
 const int HEIGHT = 800;
 
+const unsigned int BLOOM_DEPTH = 6;
+
 const int SSAO_KERNEL_SIZE = 64;
 
 using namespace std;
@@ -102,7 +104,7 @@ int main() {
     unsigned int gBuffer;
     glGenFramebuffers(1, &gBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    unsigned int gPosition, gNormal, gAlbedoSpec;
+    unsigned int gPosition, gNormal, gAlbedoSpec, gLightingData;
 
     // Position
     glGenTextures(1, &gPosition);
@@ -125,15 +127,23 @@ int main() {
     // Albedo / Specular
     glGenTextures(1, &gAlbedoSpec);
     glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, gAlbedoSpec, 0);
 
+    // Lighting Data
+    glGenTextures(1, &gLightingData);
+    glBindTexture(GL_TEXTURE_2D, gLightingData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, gLightingData, 0);
+
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    unsigned int gAttachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers(3, gAttachments);
+    unsigned int gAttachments[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+    glDrawBuffers(4, gAttachments);
 
     // Depth
     unsigned int rboDepth;
@@ -182,11 +192,21 @@ int main() {
 
     // Bloom framebuffers
 
-    unsigned int bloomBuffers[4], bloomTextures[4];
-    glGenFramebuffers(4, bloomBuffers);
-    glGenTextures(4, bloomTextures);
-    for (unsigned int i = 0; i < 4; i++) {
+    unsigned int bloomBuffers[BLOOM_DEPTH], bloomTextures[BLOOM_DEPTH];
+    glGenFramebuffers(BLOOM_DEPTH, bloomBuffers);
+    glGenTextures(BLOOM_DEPTH, bloomTextures);
+    glActiveTexture(GL_TEXTURE0);
+    for (unsigned int i = 0; i < BLOOM_DEPTH; i++) {
+        glBindFramebuffer(GL_FRAMEBUFFER, bloomBuffers[i]);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[i]);
 
+        double factor = pow(2, i);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, (int) (WIDTH / factor), (int) (HEIGHT / factor), 0, GL_RGBA, GL_FLOAT, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomTextures[i], 0);
     }
 
     // Set the scene
@@ -197,6 +217,7 @@ int main() {
     // Load shaders
     Shader geometryShader = Shader("../shaders/std_geomv.glsl", "../shaders/std_geomf.glsl");
     Shader lightingShader = Shader("../shaders/stdv.glsl", "../shaders/std_lightf.glsl");
+    Shader bloomShader = Shader("../shaders/stdv.glsl", "../shaders/std_bloomf.glsl");
     Shader hdrShader = Shader("../shaders/stdv.glsl", "../shaders/std_postf.glsl");
 
     // Setup default values
@@ -204,15 +225,25 @@ int main() {
     lightingShader.setInt("gPosition", 0);
     lightingShader.setInt("gNormal", 1);
     lightingShader.setInt("gAlbedoSpec", 2);
+    lightingShader.setInt("gLightingData", 3);
+
+    bloomShader.use();
+    bloomShader.setInt("pass", 0);
 
     hdrShader.use();
     hdrShader.setInt("color", 0);
-    hdrShader.setInt("bright", 1);
+    hdrShader.setInt("bloom1", 1);
+    hdrShader.setInt("bloom2", 2);
+    hdrShader.setInt("bloom4", 3);
+    hdrShader.setInt("bloom8", 4);
+    hdrShader.setInt("bloom16", 5);
+    hdrShader.setInt("bloom32", 6);
 
     // Create the main scene
     Scene scene = Scene();
 
     Material mat = Material(geometryShader, "../resources/test.png");
+    // mat.emission = 0.5f;
     scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     scene.add(Thing(Mesh::cube(2.0f), mat, glm::vec3(4, -1, 3), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     Thing& square = scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
@@ -246,7 +277,7 @@ int main() {
         }
 
         float& rotY = playerCamera.rotation.y;
-        float playerSpeed = 4.0f * (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 4.0f : 1.0f);
+        float playerSpeed = 4.0f * (Input::key(GLFW_KEY_LEFT_SHIFT) ? 4.0f : (Input::key(GLFW_KEY_LEFT_ALT) ? 0.05f : 1.0f));
 
         // Handle basic player movement
         if (Input::key(GLFW_KEY_W)) {
@@ -276,6 +307,7 @@ int main() {
         // Clear
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glViewport(0, 0, WIDTH, HEIGHT);
 
         // Geometry Pass
         glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
@@ -301,19 +333,60 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, gNormal);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, gLightingData);
         renderQuad();
+
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Bloom
+
+        glBindFramebuffer(GL_FRAMEBUFFER, bloomBuffers[0]);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        bloomShader.use();
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, brightBuffer);
+
+        renderQuad();
+
+        for (int i = 1; i < BLOOM_DEPTH; i++) {
+            double factor = pow(2, i);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, bloomBuffers[i]);
+            glViewport(0, 0, (int) (WIDTH / factor), (int) (HEIGHT / factor));
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, bloomTextures[i - 1]);
+
+            renderQuad();
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        // Final post-processing
+        glViewport(0, 0, WIDTH, HEIGHT);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         hdrShader.use();
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, colorBuffer);
-        glGenerateMipmap(GL_TEXTURE_2D);
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, brightBuffer);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[0]);
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[1]);
+        glActiveTexture(GL_TEXTURE3);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[2]);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[3]);
+        glActiveTexture(GL_TEXTURE5);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[4]);
+        glActiveTexture(GL_TEXTURE6);
+        glBindTexture(GL_TEXTURE_2D, bloomTextures[5]);
 
         renderQuad();
 

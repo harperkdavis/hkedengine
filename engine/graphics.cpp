@@ -218,12 +218,11 @@ void Texture::load() {
     glGenTextures(1, &id);
 
     glBindTexture(GL_TEXTURE_2D, id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -288,13 +287,14 @@ void Thing::draw() {
         return;
     }
     material.texture.use();
-    material.shader.use();
+    material.shader.use(); // TODO optimize
 
     material.shader.setMat4("model", getModelMatrix());
     material.shader.setMat4("projection", Camera::mainCamera->projectionMatrix());
     material.shader.setMat4("view", Camera::mainCamera->viewMatrix());
 
     material.shader.setVec4("color", material.color);
+    material.shader.setFloat("emission", material.emission);
 
     mesh.draw();
 }
@@ -307,7 +307,7 @@ Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotati
     this->scale = scale;
 }
 
-Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, 1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 1)) {}
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, 1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.5f)) {}
 
 void Scene::draw() {
     for (Thing t : things) {

@@ -16,11 +16,10 @@ uniform vec3 viewPos;
 uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
+uniform sampler2D gLightingData;
 
 uniform vec4 ambientLight;
 uniform DirectionalLight dirLight;
-
-const float gamma = 1.2;
 
 vec4 calcDirLight(vec3 normal, vec3 albedo) {
     vec3 lightDir = normalize(-dirLight.direction);
@@ -35,14 +34,20 @@ vec4 calcDirLight(vec3 normal, vec3 albedo) {
 
 void main() {
     vec3 vertexNormal = normalize(texture(gNormal, vertexUV).xyz);
+    if (vertexNormal == vec3(0)) discard;
     vec3 vertexPosition = texture(gPosition, vertexUV).xyz;
     vec3 vertexAlbedo = texture(gAlbedoSpec, vertexUV).rgb;
     float vertexSpecular = texture(gAlbedoSpec, vertexUV).a;
 
+    vec4 vertexLighting = texture(gLightingData, vertexUV);
+
     vec3 viewDir = normalize(viewPos - vertexPosition);
 
-    vec3 itslit = calcDirLight(vertexNormal, vertexAlbedo).xyz;
+    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : calcDirLight(vertexNormal, vertexAlbedo).xyz;
 
-    frag = vec4(itslit, 1);
-    bright = vec4(pow(itslit.x, 5), pow(itslit.y, 5), pow(itslit.z, 5), 1);
+    frag = vec4(lit, 1);
+
+    float lum = (0.2126 * lit.r + 0.7152 * lit.g + 0.0722 * lit.b);
+
+    bright = vec4(vertexAlbedo * pow(exp(min(lum, 2) - 2), 2), 1);
 }
