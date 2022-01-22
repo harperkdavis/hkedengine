@@ -5,6 +5,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "engine/graphics.h"
+#include "engine/input.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "dep/stb_image.h"
@@ -17,12 +18,6 @@ const int SSAO_KERNEL_SIZE = 64;
 using namespace std;
 
 const float MOUSE_SENSITIVITY = 0.04f;
-
-// Input processing
-void processInput(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
 
 // Linear intERPolation function (aka the most beautiful function of all time)
 float lerp(float a, float b, float f) {
@@ -55,6 +50,7 @@ void renderQuad() {
     glBindVertexArray(0);
 }
 
+const string title = "HKED Engine 0.1.0-alpha.5";
 
 
 // The main function
@@ -69,8 +65,6 @@ int main() {
 
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-    string title = "HKED Engine 0.1.0-alpha.4";
-
     GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, &title[0], nullptr, nullptr);
     if (window == nullptr) {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -79,6 +73,10 @@ int main() {
     }
     glfwMakeContextCurrent(window);
     glfwSwapInterval(0);
+
+    glfwSetKeyCallback(window, Input::inputKeyCallback);
+    glfwSetCursorPosCallback(window, Input::inputCursorCallback);
+    glfwSetMouseButtonCallback(window, Input::inputMouseCallback);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -93,6 +91,9 @@ int main() {
     glEnable(GL_DEPTH_TEST);
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if (glfwRawMouseMotionSupported()) {
+        glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+    }
 
     // Enable face culling
     glEnable(GL_CULL_FACE);
@@ -131,8 +132,8 @@ int main() {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    unsigned int attachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
-    glDrawBuffers(3, attachments);
+    unsigned int gAttachments[3] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+    glDrawBuffers(3, gAttachments);
 
     // Depth
     unsigned int rboDepth;
@@ -142,8 +143,53 @@ int main() {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cout << "Framebuffer not complete!" << std::endl;
+        std::cerr << "Framebuffer not complete!" << std::endl;
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // HDR buffers
+    unsigned int hdrBuffer;
+    glGenFramebuffers(1, &hdrBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer);
+    unsigned int colorBuffer, brightBuffer;
+
+    // Regular color buffer
+    glGenTextures(1, &colorBuffer);
+    glBindTexture(GL_TEXTURE_2D, colorBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBuffer, 0);
+
+    // Bright color buffer
+    glGenTextures(1, &brightBuffer);
+    glBindTexture(GL_TEXTURE_2D, brightBuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, WIDTH, HEIGHT, 0, GL_RGBA, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, brightBuffer, 0);
+
+    unsigned int hAttachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+    glDrawBuffers(2, hAttachments);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        std::cerr << "Framebuffer not complete!" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // Bloom framebuffers
+
+    unsigned int bloomBuffers[4], bloomTextures[4];
+    glGenFramebuffers(4, bloomBuffers);
+    glGenTextures(4, bloomTextures);
+    for (unsigned int i = 0; i < 4; i++) {
+
+    }
+
+    // Set the scene
 
     Camera playerCamera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 80.0f, 0.1f, 1000.0f);
     Camera::mainCamera = &playerCamera;
@@ -151,12 +197,17 @@ int main() {
     // Load shaders
     Shader geometryShader = Shader("../shaders/std_geomv.glsl", "../shaders/std_geomf.glsl");
     Shader lightingShader = Shader("../shaders/stdv.glsl", "../shaders/std_lightf.glsl");
+    Shader hdrShader = Shader("../shaders/stdv.glsl", "../shaders/std_postf.glsl");
 
     // Setup default values
     lightingShader.use();
     lightingShader.setInt("gPosition", 0);
     lightingShader.setInt("gNormal", 1);
     lightingShader.setInt("gAlbedoSpec", 2);
+
+    hdrShader.use();
+    hdrShader.setInt("color", 0);
+    hdrShader.setInt("bright", 1);
 
     // Create the main scene
     Scene scene = Scene();
@@ -166,48 +217,54 @@ int main() {
     scene.add(Thing(Mesh::cube(2.0f), mat, glm::vec3(4, -1, 3), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     Thing& square = scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
-
-    double mouseX = 0, mouseY = 0;
     double deltaTime = 0;
+    int frameCount = 0, lastSecond = 0;
     // Game loop
     while(!glfwWindowShouldClose(window)) {
         double startFrame = glfwGetTime();
 
-        // Process any inputs
-        processInput(window);
-
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-
-        playerCamera.rotation.x = -mouseY * MOUSE_SENSITIVITY;
-        playerCamera.rotation.y = -mouseX * MOUSE_SENSITIVITY;
-
-        if (playerCamera.rotation.x > 85) {
-            playerCamera.rotation.x = 85;
+        // Update framerate
+        if (floor(glfwGetTime()) > lastSecond) {
+            lastSecond = floor(glfwGetTime());
+            string winTitle = title + " (FPS: " + to_string(frameCount) + ")";
+            glfwSetWindowTitle(window, &winTitle[0]);
+            frameCount = 0;
+        } else {
+            frameCount++;
         }
-        if (playerCamera.rotation.x < -85) {
-            playerCamera.rotation.x = -85;
+
+        // Process player camera movement
+
+        playerCamera.rotation.x += -Input::getAxisY() * MOUSE_SENSITIVITY;
+        playerCamera.rotation.y += -Input::getAxisX() * MOUSE_SENSITIVITY;
+
+        if (playerCamera.rotation.x > 89) {
+            playerCamera.rotation.x = 89;
+        }
+        if (playerCamera.rotation.x < -89) {
+            playerCamera.rotation.x = -89;
         }
 
         float& rotY = playerCamera.rotation.y;
         float playerSpeed = 4.0f * (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? 4.0f : 1.0f);
 
         // Handle basic player movement
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_W)) {
             playerCamera.position += glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
         }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_S)) {
             playerCamera.position -= glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
         }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_D)) {
             playerCamera.position += glm::vec3(sin(-glm::radians(rotY) + M_PI / 2), 0, cos(-glm::radians(rotY) + M_PI / 2)) * (float) deltaTime * playerSpeed;
         }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_A)) {
             playerCamera.position -= glm::vec3(sin(-glm::radians(rotY) + M_PI / 2), 0, cos(-glm::radians(rotY) + M_PI / 2)) * (float) deltaTime * playerSpeed;
         }
-        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_SPACE)) {
             playerCamera.position += glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+        if (Input::key(GLFW_KEY_LEFT_CONTROL)) {
             playerCamera.position -= glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
         }
 
@@ -227,8 +284,10 @@ int main() {
         scene.draw();
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // Lighting Pass
         lightingShader.use();
 
@@ -244,6 +303,21 @@ int main() {
         glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
         renderQuad();
 
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        hdrShader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, colorBuffer);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, brightBuffer);
+
+        renderQuad();
+
+        Input::updateInput();
         glfwPollEvents();
         glfwSwapBuffers(window);
 

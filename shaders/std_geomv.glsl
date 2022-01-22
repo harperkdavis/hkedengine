@@ -17,7 +17,7 @@ void main() {
     vertexPos = worldSpace.xyz;
 
     vertexUV = uv;
-    vertexNormal = normal * transpose(inverse(mat3(model)));
+    vertexNormal = normalize(transpose(inverse(mat3(model))) * normal);
 
     gl_Position = projection * view * worldSpace;
 

@@ -1,12 +1,13 @@
 #version 330 core
 
+layout (location = 0) out vec4 frag;
+layout (location = 1) out vec4 bright;
+
 struct DirectionalLight {
     vec3 direction;
     vec4 color;
     float intensity;
 };
-
-out vec4 frag;
 
 in vec2 vertexUV;
 
@@ -18,6 +19,8 @@ uniform sampler2D gAlbedoSpec;
 
 uniform vec4 ambientLight;
 uniform DirectionalLight dirLight;
+
+const float gamma = 1.2;
 
 vec4 calcDirLight(vec3 normal, vec3 albedo) {
     vec3 lightDir = normalize(-dirLight.direction);
@@ -38,6 +41,8 @@ void main() {
 
     vec3 viewDir = normalize(viewPos - vertexPosition);
 
-    vec4 color = calcDirLight(vertexNormal, vertexAlbedo);
-    frag = color * color * color;
+    vec3 itslit = calcDirLight(vertexNormal, vertexAlbedo).xyz;
+
+    frag = vec4(itslit, 1);
+    bright = vec4(pow(itslit.x, 5), pow(itslit.y, 5), pow(itslit.z, 5), 1);
 }

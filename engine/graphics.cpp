@@ -54,10 +54,10 @@ Mesh Mesh::cube(float size) {
         Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
 
         // Bottom
-        Vertex(glm::vec3(size, -size, size), glm::vec3(-1, -1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(-1, -1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, -1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, -1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(0, -1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
 
     }, {
 
@@ -116,10 +116,10 @@ Mesh Mesh::rect(float xSize, float ySize, float zSize) {
         Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
 
         // Bottom
-        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(-1, -1, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(-1, -1, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(-1, -1, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(-1, -1, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(0, -1, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
     }, {
         1, 0, 3,
         1, 3, 2,
@@ -217,12 +217,12 @@ Texture::Texture(string path) {
 void Texture::load() {
     glGenTextures(1, &id);
 
+    glBindTexture(GL_TEXTURE_2D, id);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
 
-    glBindTexture(GL_TEXTURE_2D, id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -307,7 +307,7 @@ Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotati
     this->scale = scale;
 }
 
-Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.2f, 1.0f, -0.7f), glm::vec4(1, 1, 1, 1), 1)) {}
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, 1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 1)) {}
 
 void Scene::draw() {
     for (Thing t : things) {
