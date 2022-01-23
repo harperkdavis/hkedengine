@@ -10,6 +10,7 @@ in vec3 vertexNormal;
 
 uniform sampler2D diffuse;
 uniform float emission = 0;
+uniform float specular = 0;
 
 void main() {
 
@@ -17,7 +18,7 @@ void main() {
     gNormal = normalize(vertexNormal);
 
     gAlbedoSpec.rgb = texture(diffuse, vertexUV).rgb;
-    gAlbedoSpec.a = 1;
+    gAlbedoSpec.a = specular;
 
     gLightingData = vec4(emission, 0, 0, 0);
 }

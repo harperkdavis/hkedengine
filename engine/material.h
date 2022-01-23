@@ -43,7 +43,8 @@ public:
 
     Texture* texture;
     glm::vec4 color;
-    float emission = 0;
+    float specular = 0.2f;
+    float emission = 0.0f;
 
     Material(Texture* texture);
     Material(Texture* texture, glm::vec4 color);

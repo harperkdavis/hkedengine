@@ -112,6 +112,12 @@ public:
         setFloat(name + ".intensity", intensity);
     }
 
+    void setPointLight(const std::string &name, glm::vec3 position, glm::vec4 color, float intensity) const {
+        setVec3(name + ".position", position);
+        setVec4(name + ".color", color);
+        setFloat(name + ".intensity", intensity);
+    }
+
 private:
     // utility function for checking shader compilation/linking errors.
     // ------------------------------------------------------------------------

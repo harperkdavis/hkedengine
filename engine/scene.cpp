@@ -21,7 +21,7 @@ glm::mat4 modelMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
 
 // Generates a view matrix
 glm::mat4 Camera::viewMatrix() const {
-    return modelMatrix(glm::vec3(-position.x, -position.y, -position.z), rotation, glm::vec3(-1, -1, 1));
+    return modelMatrix(position * -1.0f, rotation, glm::vec3(-1, -1, 1));
 }
 
 // Generates a projection matrix
@@ -58,6 +58,7 @@ void Thing::draw(Shader& shader) const {
     shader.setMat4("model", getModelMatrix());
 
     shader.setVec4("color", material.color);
+    shader.setFloat("specular", material.specular);
     shader.setFloat("emission", material.emission);
 
     mesh.draw();
@@ -71,7 +72,9 @@ Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotati
     this->scale = scale;
 }
 
-Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.8f)) {}
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.0f)) {
+
+}
 
 void Scene::draw(Shader& shader) {
     for (Thing t : things) {

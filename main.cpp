@@ -36,19 +36,21 @@ int main() {
     // Create the main scene
     Scene scene = Scene();
     scene.camera = &playerCamera;
-
+    scene.pointLights[0] = PointLight(glm::vec3(0, 1, 0), glm::vec4(1, 1, 1, 1), 1);
+    scene.pointLights[1] = PointLight(glm::vec3(0, 4, -10), glm::vec4(1, 1, 1, 1), 4);
     Pipeline::scene = &scene;
 
     Material mat = Material(new Texture("../resources/test.png"));
-    Material glowy = Material(new Texture("../resources/default.png"));
+    Material glowy = Material(new Texture("../resources/test.png"));
     glowy.emission = 1;
+    mat.specular = 0.2;
 
     Material box = Material(new Texture("../resources/box.png"));
 
     scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
     scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, 1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(0.5f), glowy, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
     double deltaTime = 0;

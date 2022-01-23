@@ -9,6 +9,12 @@ struct DirectionalLight {
     float intensity;
 };
 
+struct PointLight {
+    vec3 position;
+    vec4 color;
+    float intensity;
+};
+
 in vec2 vertexUV;
 
 uniform vec3 viewPos;
@@ -23,6 +29,7 @@ uniform mat4 lightSpaceMatrix;
 
 uniform vec4 ambientLight;
 uniform DirectionalLight dirLight;
+uniform PointLight[64] pointLights;
 
 float calcShadow(vec4 lightSpace) {
 
@@ -47,7 +54,6 @@ float calcShadow(vec4 lightSpace) {
     return shadow;
 }
 
-
 vec3 calcDirLight(vec3 normal, vec3 albedo) {
     vec3 lightDir = normalize(-dirLight.direction);
     float diff = max(dot(lightDir, normal), 0);
@@ -66,20 +72,40 @@ void main() {
     float vertexSpecular = texture(gAlbedoSpec, vertexUV).a;
 
     vec4 vertexLighting = texture(gLightingData, vertexUV);
-    vec3 viewDir = normalize(viewPos - vertexPosition);
 
-    // Calculate lighting
-
+    // Directional Lighting
     vec3 ambient = ambientLight.rgb * vertexAlbedo.rgb;
     vec3 diffuse = calcDirLight(vertexNormal, vertexAlbedo);
 
     float shadow = calcShadow(lightSpaceMatrix * vec4(vertexPosition, 1));
 
-    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : ambient + (1 - shadow) * diffuse;
+    vec3 lighting = ambient + (1 - shadow) * diffuse;
+
+    // Point Lighting
+    vec3 viewDir = normalize(viewPos - vertexPosition);
+    for (int i = 0; i < 64; i++) {
+        PointLight pl = pointLights[i];
+        float distance = length(pl.position - vertexPosition);
+        if (distance < pl.intensity * 10) {
+            vec3 lightDir = normalize(pl.position - vertexPosition);
+            vec3 diffuse = max(dot(vertexNormal, lightDir), 0.0) * vertexAlbedo * pl.color.rgb;
+
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(vertexNormal, halfwayDir), 0.0), 16.0);
+            vec3 specular = pl.color.rgb * spec * vertexSpecular;
+
+            float attentuation = 1.0 / (1.0 + 0.4 * distance + 0.3 * distance * distance);
+            diffuse *= attentuation * pl.intensity;
+            specular *= attentuation * pl.intensity;
+            lighting += diffuse + specular;
+        }
+    }
+
+    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : lighting;
 
     frag = vec4(lit, 1);
 
     float lum = (0.2126 * lit.r + 0.7152 * lit.g + 0.0722 * lit.b);
 
-    bright = vec4(lit * pow(exp(min(lum, 2) - 2), 2), 1);
+    bright = vec4(lit * pow(exp(1.25 * min(lum, 2) - 2.5), 2), 1);
 }

@@ -254,6 +254,10 @@ void Pipeline::lightingPass() {
     lightingShader->setVec4("ambientLight", scene->ambientLight);
     lightingShader->setDirLight("dirLight", scene->dirLight.direction, scene->dirLight.color, scene->dirLight.intensity);
     lightingShader->setMat4("lightSpaceMatrix", getLightSpaceMatrix());
+    for (unsigned int i = 0; i < 64; i++) {
+        PointLight& pl = scene->pointLights[i];
+        lightingShader->setPointLight("pointLights[" + to_string(i) + "]", pl.position, pl.color, pl.intensity);
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -318,8 +322,6 @@ void Pipeline::lightingPass() {
     glBindTexture(GL_TEXTURE_2D, bloomTextures[4]);
     glActiveTexture(GL_TEXTURE6);
     glBindTexture(GL_TEXTURE_2D, bloomTextures[5]);
-    glActiveTexture(GL_TEXTURE7);
-    glBindTexture(GL_TEXTURE_2D, bloomTextures[6]);
 
     renderQuad();
 

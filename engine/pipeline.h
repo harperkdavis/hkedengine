@@ -43,7 +43,7 @@ private:
     inline static string title = "HKED Engine 0.1.0-alpha.6";
     inline static unsigned int renderQuadVao = 0, renderQuadVbo = 0;
 
-    inline static const unsigned int BLOOM_DEPTH = 7;
+    inline static const unsigned int BLOOM_DEPTH = 6;
     inline static const unsigned int SHADOW_RESOLUTION = 1024;
 
     inline static unsigned int gBuffer;

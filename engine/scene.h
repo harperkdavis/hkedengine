@@ -39,6 +39,21 @@ public:
     }
 };
 
+struct PointLight {
+public:
+    glm::vec3 position;
+    glm::vec4 color;
+    float intensity;
+
+    PointLight() : PointLight(glm::vec3(0, 0, 0), glm::vec4(0, 0, 0, 0), 0) {}
+
+    PointLight(glm::vec3 position, glm::vec4 color, float intensity) {
+        this->position = position;
+        this->color = color;
+        this->intensity = intensity;
+    }
+};
+
 // Camera class
 class Camera {
 public:
@@ -84,8 +99,9 @@ public:
     Camera* camera;
     vector<Thing> things;
 
-    glm::vec4 ambientLight = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+    glm::vec4 ambientLight = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
     DirectionalLight dirLight;
+    PointLight pointLights[64];
 
     Thing& add(Thing thing) {
         return things.emplace_back(thing);
