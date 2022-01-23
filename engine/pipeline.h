@@ -24,7 +24,7 @@ using namespace std;
 
 class Pipeline {
 public:
-    inline static int WIDTH = 1200, HEIGHT = 800;
+    inline static int WIDTH = 1920, HEIGHT = 1080;
     inline static Scene* scene = nullptr;
 
     static void initialize();
@@ -44,21 +44,26 @@ private:
     inline static unsigned int renderQuadVao = 0, renderQuadVbo = 0;
 
     inline static const unsigned int BLOOM_DEPTH = 7;
+    inline static const unsigned int SHADOW_RESOLUTION = 1024;
 
     inline static unsigned int gBuffer;
     inline static unsigned int gPosition, gNormal, gAlbedoSpec, gLightingData;
     inline static unsigned int rboDepth;
+
+    inline static unsigned int shadowBuffer, shadowMap;
 
     inline static unsigned int hdrBuffer;
     inline static unsigned int colorBuffer, brightBuffer;
 
     inline static unsigned int bloomBuffers[BLOOM_DEPTH], bloomTextures[BLOOM_DEPTH];
 
-    inline static Shader *geometryShader, *lightingShader, *bloomShader, *hdrShader;
+    inline static Shader *geometryShader, *lightingShader, *bloomShader, *hdrShader, *shadowShader;
 
     static void createFramebuffers();
     static void loadShaders();
     static void renderQuad();
+
+    static glm::mat4 getLightSpaceMatrix();
 
 };
 

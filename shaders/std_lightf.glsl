@@ -17,37 +17,69 @@ uniform sampler2D gPosition;
 uniform sampler2D gNormal;
 uniform sampler2D gAlbedoSpec;
 uniform sampler2D gLightingData;
+uniform sampler2D shadowMap;
+
+uniform mat4 lightSpaceMatrix;
 
 uniform vec4 ambientLight;
 uniform DirectionalLight dirLight;
 
-vec4 calcDirLight(vec3 normal, vec3 albedo) {
+float calcShadow(vec4 lightSpace) {
+
+    vec3 projCoords = lightSpace.xyz / lightSpace.w;
+    projCoords = projCoords * 0.5 + 0.5;
+    float closestDepth = texture(shadowMap, projCoords.xy).r;
+    float currentDepth = projCoords.z;
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+    for(int x = -1; x <= 1; ++x){
+        for(int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            shadow += currentDepth - 0.001 > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    if(projCoords.z > 1.0)
+    shadow = 0.0;
+
+    return shadow;
+}
+
+
+vec3 calcDirLight(vec3 normal, vec3 albedo) {
     vec3 lightDir = normalize(-dirLight.direction);
-
     float diff = max(dot(lightDir, normal), 0);
-
-    vec3 ambient = ambientLight.rgb * albedo.rgb;
     vec3 diffuse = diff * albedo.rgb * dirLight.intensity;
 
-    return vec4(diffuse + ambient, 1);
+    return diffuse;
 }
 
 void main() {
+    // Define fragment information
     vec3 vertexNormal = normalize(texture(gNormal, vertexUV).xyz);
     if (vertexNormal == vec3(0)) discard;
+
     vec3 vertexPosition = texture(gPosition, vertexUV).xyz;
     vec3 vertexAlbedo = texture(gAlbedoSpec, vertexUV).rgb;
     float vertexSpecular = texture(gAlbedoSpec, vertexUV).a;
 
     vec4 vertexLighting = texture(gLightingData, vertexUV);
-
     vec3 viewDir = normalize(viewPos - vertexPosition);
 
-    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : calcDirLight(vertexNormal, vertexAlbedo).xyz;
+    // Calculate lighting
+
+    vec3 ambient = ambientLight.rgb * vertexAlbedo.rgb;
+    vec3 diffuse = calcDirLight(vertexNormal, vertexAlbedo);
+
+    float shadow = calcShadow(lightSpaceMatrix * vec4(vertexPosition, 1));
+
+    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : ambient + (1 - shadow) * diffuse;
 
     frag = vec4(lit, 1);
 
     float lum = (0.2126 * lit.r + 0.7152 * lit.g + 0.0722 * lit.b);
 
-    bright = vec4(vertexAlbedo * pow(exp(min(lum, 2) - 2), 2), 1);
+    bright = vec4(lit * pow(exp(min(lum, 2) - 2), 2), 1);
 }

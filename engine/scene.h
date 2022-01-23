@@ -48,7 +48,7 @@ public:
     float fov, nearPlane, farPlane;
 
     glm::mat4 viewMatrix() const;
-    glm::mat4 projectionMatrix() const;
+    glm::mat4 projectionMatrix(int width, int height) const;
 
     Camera(glm::vec3 position, glm::vec3 rotation, float fov, float nearPlane, float farPlane);
 
@@ -71,7 +71,7 @@ public:
     glm::mat4 getLocalModelMatrix() const;
     glm::mat4 getModelMatrix() const;
 
-    void draw(Shader& shader);
+    void draw(Shader& shader) const;
 
     Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
@@ -84,7 +84,7 @@ public:
     Camera* camera;
     vector<Thing> things;
 
-    glm::vec4 ambientLight = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+    glm::vec4 ambientLight = glm::vec4(0.2f, 0.2f, 0.2f, 1.0f);
     DirectionalLight dirLight;
 
     Thing& add(Thing thing) {

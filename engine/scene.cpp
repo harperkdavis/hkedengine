@@ -21,12 +21,12 @@ glm::mat4 modelMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
 
 // Generates a view matrix
 glm::mat4 Camera::viewMatrix() const {
-    return modelMatrix(position, rotation, glm::vec3(1, 1, 1));
+    return modelMatrix(glm::vec3(-position.x, -position.y, -position.z), rotation, glm::vec3(-1, -1, 1));
 }
 
 // Generates a projection matrix
-glm::mat4 Camera::projectionMatrix() const {
-    return glm::perspective(fov, 1200.0f / 800.0f, nearPlane, farPlane);
+glm::mat4 Camera::projectionMatrix(int width, int height) const {
+    return glm::perspective(fov, (float) width / height, nearPlane, farPlane);
 }
 
 // Camera constructor
@@ -52,7 +52,7 @@ glm::mat4 Thing::getModelMatrix() const {
 }
 
 // Draws a thing
-void Thing::draw(Shader& shader) {
+void Thing::draw(Shader& shader) const {
     material.texture->use();
 
     shader.setMat4("model", getModelMatrix());
@@ -71,7 +71,7 @@ Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotati
     this->scale = scale;
 }
 
-Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, 1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.5f)) {}
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.8f)) {}
 
 void Scene::draw(Shader& shader) {
     for (Thing t : things) {

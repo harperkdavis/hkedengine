@@ -13,6 +13,7 @@ void Pipeline::initialize() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
+    glfwWindowHint(GLFW_DECORATED, GL_FALSE);
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, &title[0], nullptr, nullptr);
@@ -22,7 +23,7 @@ void Pipeline::initialize() {
         return;
     }
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
 
     glfwSetKeyCallback(window, Input::inputKeyCallback);
     glfwSetCursorPosCallback(window, Input::inputCursorCallback);
@@ -57,7 +58,7 @@ void Pipeline::shutdown() {
     glfwTerminate();
 }
 
-// Should the window close? Idk, but this function will tell you!
+// Should the window close? IDK, but this function will tell you!
 bool Pipeline::windowShouldClose() {
     return glfwWindowShouldClose(window);
 }
@@ -173,6 +174,22 @@ void Pipeline::createFramebuffers() {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomTextures[i], 0);
     }
 
+    glGenFramebuffers(1, &shadowBuffer);
+
+    glGenTextures(1, &shadowMap);
+    glBindTexture(GL_TEXTURE_2D, shadowMap);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_RESOLUTION, SHADOW_RESOLUTION, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+    glDrawBuffer(GL_NONE);
+    glReadBuffer(GL_NONE);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 }
 
 // Pre-render stage
@@ -183,21 +200,45 @@ void Pipeline::preRender() {
     glViewport(0, 0, WIDTH, HEIGHT);
 
     geometryShader->use();
-    geometryShader->setMat4("projection", scene->camera->projectionMatrix());
+    geometryShader->setMat4("projection", scene->camera->projectionMatrix(WIDTH, HEIGHT));
     geometryShader->setMat4("view", scene->camera->viewMatrix());
 
 }
 
+glm::mat4 Pipeline::getLightSpaceMatrix() {
+    float nearPlane = 1.0f, farPlane = 100.0f;
+    glm::mat4 lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, nearPlane, farPlane);
+    glm::vec3 dld = scene->dirLight.direction;
+    glm::mat4 lightView = glm::lookAt(glm::vec3(-dld.x * 20, -dld.y * 20, -dld.z * 20), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+    return lightProjection * lightView;
+}
+
 // Deferred rendering geometry pass
 void Pipeline::geometryPass() {
-    // Geometry Pass
-    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Draw shadow map
 
-    scene->draw(*geometryShader);
+    glViewport(0, 0, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
+    glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_FRONT);
+
+    shadowShader->use();
+    shadowShader->setMat4("lightSpaceMatrix", getLightSpaceMatrix());
+    scene->draw(*shadowShader);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    // Geometry Pass
+    glViewport(0, 0, WIDTH, HEIGHT);
+    glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glCullFace(GL_BACK);
+
+    geometryShader->use();
+    scene->draw(*geometryShader);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 // Deferred rendering lighting and effects
@@ -212,6 +253,7 @@ void Pipeline::lightingPass() {
     lightingShader->setVec3("viewPos", scene->camera->position);
     lightingShader->setVec4("ambientLight", scene->ambientLight);
     lightingShader->setDirLight("dirLight", scene->dirLight.direction, scene->dirLight.color, scene->dirLight.intensity);
+    lightingShader->setMat4("lightSpaceMatrix", getLightSpaceMatrix());
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, gPosition);
@@ -221,6 +263,9 @@ void Pipeline::lightingPass() {
     glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
     glActiveTexture(GL_TEXTURE3);
     glBindTexture(GL_TEXTURE_2D, gLightingData);
+    glActiveTexture(GL_TEXTURE4);
+    glBindTexture(GL_TEXTURE_2D, shadowMap);
+
     renderQuad();
 
 
@@ -294,6 +339,7 @@ void Pipeline::loadShaders() {
     lightingShader = new Shader("../shaders/stdv.glsl", "../shaders/std_lightf.glsl");
     bloomShader = new Shader("../shaders/stdv.glsl", "../shaders/std_bloomf.glsl");
     hdrShader = new Shader("../shaders/stdv.glsl", "../shaders/std_postf.glsl");
+    shadowShader = new Shader("../shaders/std_shadowv.glsl", "../shaders/std_shadowf.glsl");
 
     // Setup default values
     lightingShader->use();
@@ -301,6 +347,7 @@ void Pipeline::loadShaders() {
     lightingShader->setInt("gNormal", 1);
     lightingShader->setInt("gAlbedoSpec", 2);
     lightingShader->setInt("gLightingData", 3);
+    lightingShader->setInt("shadowMap", 4);
 
     bloomShader->use();
     bloomShader->setInt("pass", 0);

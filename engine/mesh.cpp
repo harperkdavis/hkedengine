@@ -8,28 +8,28 @@
 Mesh Mesh::cube(float size) {
     return Mesh({
         // Back
-        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
 
         // Front
-        Vertex(glm::vec3(size, size, size), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, -size, size), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
 
         // Left
-        Vertex(glm::vec3(-size, size, size), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-size, size, -size), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
 
         // Right
-        Vertex(glm::vec3(size, size, -size), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(size, -size, -size), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(size, -size, size), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(size, size, size), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
 
         // Top
         Vertex(glm::vec3(size, size, -size), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
@@ -70,28 +70,28 @@ Mesh Mesh::cube(float size) {
 Mesh Mesh::rect(float xSize, float ySize, float zSize) {
     return Mesh({
         // Back
-        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(0, 0, -1), glm::vec2(1, 0)),
 
         // Front
-        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
-        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(0, 1)),
+        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 1)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(0, 0, 1), glm::vec2(1, 0)),
 
         // Left
-        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(-xSize, ySize, -zSize), glm::vec3(-1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(-xSize, ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(-1, 0, 0), glm::vec2(1, 0)),
 
         // Right
-        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
-        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
-        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
-        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
+        Vertex(glm::vec3(xSize, -ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(0, 0)),
+        Vertex(glm::vec3(xSize, ySize, zSize), glm::vec3(1, 0, 0), glm::vec2(0, 1)),
+        Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(1, 1)),
+        Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(1, 0, 0), glm::vec2(1, 0)),
 
         // Top
         Vertex(glm::vec3(xSize, ySize, -zSize), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
@@ -104,6 +104,7 @@ Mesh Mesh::rect(float xSize, float ySize, float zSize) {
         Vertex(glm::vec3(xSize, -ySize, -zSize), glm::vec3(0, -1, 0), glm::vec2(0, 1)),
         Vertex(glm::vec3(-xSize, -ySize, -zSize), glm::vec3(0, -1, 0), glm::vec2(1, 1)),
         Vertex(glm::vec3(-xSize, -ySize, zSize), glm::vec3(0, -1, 0), glm::vec2(1, 0)),
+
     }, {
         1, 0, 3,
         1, 3, 2,

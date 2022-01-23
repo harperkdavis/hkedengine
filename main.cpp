@@ -40,11 +40,16 @@ int main() {
     Pipeline::scene = &scene;
 
     Material mat = Material(new Texture("../resources/test.png"));
-    Material mat2 = Material(new Texture("../resources/test.png"));
-    mat2.emission = 0.5f;
-    scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(2.0f), mat2, glm::vec3(4, -1, 3), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    Thing& square = scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    Material glowy = Material(new Texture("../resources/default.png"));
+    glowy.emission = 1;
+
+    Material box = Material(new Texture("../resources/box.png"));
+
+    scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
+    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, 1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;
@@ -55,7 +60,7 @@ int main() {
         // Update framerate
         if (floor(glfwGetTime()) > lastSecond) {
             lastSecond = floor(glfwGetTime());
-            string winTitle = "HKED Engine 0.1.0-alpha.6 (FPS: " + to_string(frameCount) + ")";
+            string winTitle = "HKED Engine 0.1.0-alpha.7 (FPS: " + to_string(frameCount) + ")";
             Pipeline::setTitle(winTitle);
             frameCount = 0;
         } else {
@@ -64,8 +69,8 @@ int main() {
 
         // Process player camera movement
 
-        playerCamera.rotation.x += -Input::getAxisY() * MOUSE_SENSITIVITY;
-        playerCamera.rotation.y += -Input::getAxisX() * MOUSE_SENSITIVITY;
+        playerCamera.rotation.x += Input::getAxisY() * MOUSE_SENSITIVITY;
+        playerCamera.rotation.y += Input::getAxisX() * MOUSE_SENSITIVITY;
 
         if (playerCamera.rotation.x > 89) {
             playerCamera.rotation.x = 89;
@@ -79,10 +84,10 @@ int main() {
 
         // Handle basic player movement
         if (Input::key(GLFW_KEY_W)) {
-            playerCamera.position += glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
+            playerCamera.position -= glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
         }
         if (Input::key(GLFW_KEY_S)) {
-            playerCamera.position -= glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
+            playerCamera.position += glm::vec3(sin(-glm::radians(rotY)), 0, cos(-glm::radians(rotY))) * (float) deltaTime * playerSpeed;
         }
         if (Input::key(GLFW_KEY_D)) {
             playerCamera.position += glm::vec3(sin(-glm::radians(rotY) + M_PI / 2), 0, cos(-glm::radians(rotY) + M_PI / 2)) * (float) deltaTime * playerSpeed;
@@ -97,15 +102,9 @@ int main() {
             playerCamera.position -= glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
         }
 
-        // vstd::cout << playerCamera.position.x << ", " << playerCamera.position.y << ", " << playerCamera.position.z << std::endl;
-
-
-        square.rotation.y = glfwGetTime() * 64;
-
         Pipeline::preRender();
         Pipeline::geometryPass();
         Pipeline::lightingPass();
-
 
         Input::updateInput();
         Pipeline::glUpdate();
