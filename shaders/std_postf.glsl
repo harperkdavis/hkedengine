@@ -11,6 +11,7 @@ uniform sampler2D bloom4;
 uniform sampler2D bloom8;
 uniform sampler2D bloom16;
 uniform sampler2D bloom32;
+uniform sampler2D bloom64;
 
 void main() {
 
@@ -21,6 +22,7 @@ void main() {
     vec3 bl8 = texture(bloom8, vertexUV).rgb;
     vec3 bl16 = texture(bloom16, vertexUV).rgb;
     vec3 bl32 = texture(bloom32, vertexUV).rgb;
+    vec3 bl64 = texture(bloom32, vertexUV).rgb;
 
-    frag = vec4(col + bl1 + bl2 + bl4 + bl8 + bl16 + bl32, 1);
+    frag = vec4(col + bl1 + bl2 + bl4 + bl8 + bl16 + bl32 + bl64, 1);
 }
