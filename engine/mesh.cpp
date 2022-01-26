@@ -127,6 +127,31 @@ Mesh Mesh::rect(float xSize, float ySize, float zSize) {
     });
 }
 
+// Load models using assimp
+Mesh Mesh::load(string path) {
+    objl::Loader loader;
+
+    loader.LoadFile(path);
+
+    vector<Vertex> vertices;
+    vector<unsigned int> indices;
+
+    for (objl::Vertex v : loader.LoadedMeshes[0].Vertices) {
+        glm::vec3 position = glm::vec3(v.Position.X, v.Position.Y, v.Position.Z);
+        glm::vec3 normal = glm::vec3(v.Normal.X, v.Normal.Y, v.Normal.Z);
+        glm::vec2 uv = glm::vec2(v.TextureCoordinate.X, v.TextureCoordinate.Y);
+        Vertex newVertex = Vertex(position, normal, uv);
+
+        vertices.emplace_back(newVertex);
+    }
+
+    for (unsigned int i : loader.LoadedMeshes[0].Indices) {
+        indices.emplace_back(i);
+    }
+
+    return Mesh(vertices, indices);
+}
+
 // Mesh constructor
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices) {
     this->vertices = vertices;

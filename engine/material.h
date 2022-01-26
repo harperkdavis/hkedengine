@@ -14,7 +14,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../dep/stb_image.h"
+#include "dep/stb_image.h"
 #include "shader.h"
 
 using namespace std;

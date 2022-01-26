@@ -14,7 +14,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../dep/stb_image.h"
+#include "dep/obj_loader.h"
+
+#include "dep/stb_image.h"
 #include "shader.h"
 
 using namespace std;
@@ -39,6 +41,7 @@ class Mesh {
 public:
     static Mesh cube(float size);
     static Mesh rect(float xSize, float ySize, float zSize);
+    static Mesh load(string path);
 
     vector<Vertex> vertices;
     vector<unsigned int> indices;

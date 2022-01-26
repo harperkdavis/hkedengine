@@ -12,7 +12,7 @@
 #include "engine/input.h"
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "dep/stb_image.h"
+#include "engine/dep/stb_image.h"
 
 const int WIDTH = 1200;
 const int HEIGHT = 800;
@@ -51,7 +51,7 @@ int main() {
     scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, 1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
     scene.add(Thing(Mesh::cube(0.5f), glowy, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::load("../resources/monke.obj"), box, glm::vec3(0, 2, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;
@@ -62,7 +62,7 @@ int main() {
         // Update framerate
         if (floor(glfwGetTime()) > lastSecond) {
             lastSecond = floor(glfwGetTime());
-            string winTitle = "HKED Engine 0.1.0-alpha.7 (FPS: " + to_string(frameCount) + ")";
+            string winTitle = "HKED Engine 0.1.0-alpha.8 (FPS: " + to_string(frameCount) + ")";
             Pipeline::setTitle(winTitle);
             frameCount = 0;
         } else {

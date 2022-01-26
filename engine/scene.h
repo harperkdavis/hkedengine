@@ -17,7 +17,7 @@
 #include "mesh.h"
 #include "material.h"
 
-#include "../dep/stb_image.h"
+#include "dep/stb_image.h"
 #include "shader.h"
 
 

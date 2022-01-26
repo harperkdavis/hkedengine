@@ -17,7 +17,7 @@
 #include "input.h"
 #include "scene.h"
 
-#include "../dep/stb_image.h"
+#include "dep/stb_image.h"
 #include "shader.h"
 
 using namespace std;
