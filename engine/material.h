@@ -30,23 +30,26 @@ public:
 
     Texture();
     explicit Texture(string path);
+    Texture(string path, int minFiltering, int magFiltering);
+    Texture(string path, int minFiltering, int magFiltering, int edgeMode);
 
     unsigned int id;
 private:
 
-    void load();
+    void load(int minFiltering, int magFiltering, int edgeMode);
 };
 
 // Class for storing material information
 class Material {
 public:
 
-    Texture* texture;
+    Texture* texture = nullptr;
     glm::vec4 color;
     float specular = 0.2f;
     float emission = 0.0f;
 
-    Material(Texture* texture);
+    Material();
+    explicit Material(Texture* texture);
     Material(Texture* texture, glm::vec4 color);
 };
 

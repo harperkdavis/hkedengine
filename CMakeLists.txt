@@ -12,10 +12,12 @@ file(COPY resources DESTINATION ${dir}/cmake-build-debug)
 file(COPY shaders DESTINATION ${dir}/cmake-build-debug)
 
 include_directories(${PROJECT_SOURCE_DIR}/dep/glfw/include)
+include_directories(${PROJECT_SOURCE_DIR}/dep/reactphysics3d/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/glm/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/GLAD/include)
 
 link_directories(${PROJECT_SOURCE_DIR}/dep/glfw/lib-mingw-w64)
+link_directories(${PROJECT_SOURCE_DIR}/dep/reactphysics3d/build)
 
 add_executable(hkedengine ${SOURCE_FILES} ${HEADER_FILES})
 

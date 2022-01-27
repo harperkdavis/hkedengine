@@ -23,7 +23,7 @@ void Pipeline::initialize() {
         return;
     }
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     glfwSetKeyCallback(window, Input::inputKeyCallback);
     glfwSetCursorPosCallback(window, Input::inputCursorCallback);

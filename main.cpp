@@ -14,11 +14,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "engine/dep/stb_image.h"
 
-const int WIDTH = 1200;
-const int HEIGHT = 800;
-
-const int SSAO_KERNEL_SIZE = 64;
-
 using namespace std;
 
 const float MOUSE_SENSITIVITY = 0.04f;
@@ -31,7 +26,7 @@ int main() {
     Pipeline::initialize();
 
     // Set the scene
-    Camera playerCamera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 80.0f, 0.1f, 1000.0f);
+    Camera playerCamera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 80.0f, 0.1f, 8192.0f);
 
     // Create the main scene
     Scene scene = Scene();
@@ -46,12 +41,13 @@ int main() {
     mat.specular = 0.2;
 
     Material box = Material(new Texture("../resources/box.png"));
+    Material sky = Material(new Texture("../resources/skybox.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE));
+    sky.emission = 1.0f / 256.0f;
 
-    scene.add(Thing(Mesh::cube(1.0f), mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
-    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(0.5f), mat, glm::vec3(0, 4, 1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(0.5f), glowy, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::load("../resources/monke.obj"), box, glm::vec3(0, 2, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(1.0f), &mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
+    scene.add(Thing(Mesh::cubemap(0.5f), &sky, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(0.5f), &glowy, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::load("../resources/monke.obj"), &box, glm::vec3(0, 2, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
 
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;
@@ -70,6 +66,7 @@ int main() {
         }
 
         // Process player camera movement
+        double updateFrame = glfwGetTime();
 
         playerCamera.rotation.x += Input::getAxisY() * MOUSE_SENSITIVITY;
         playerCamera.rotation.y += Input::getAxisX() * MOUSE_SENSITIVITY;
@@ -104,6 +101,9 @@ int main() {
             playerCamera.position -= glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
         }
 
+        updateFrame -= glfwGetTime();
+
+        double preRender = glfwGetTime();
         Pipeline::preRender();
         Pipeline::geometryPass();
         Pipeline::lightingPass();

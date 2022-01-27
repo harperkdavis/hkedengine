@@ -66,6 +66,70 @@ Mesh Mesh::cube(float size) {
     });
 }
 
+// Simple cube mesh
+Mesh Mesh::cubemap(float size) {
+    const float ONE_THIRD = 1.0f / 3.0f;
+    const float ONE_FOURTH = 1.0f / 4.0f;
+    return Mesh({
+        // Back
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(3 * ONE_FOURTH, 1 * ONE_THIRD)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 0, -1), glm::vec2(3 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 0, -1), glm::vec2(4 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, 0, -1), glm::vec2(4 * ONE_FOURTH, 1 * ONE_THIRD)),
+
+        // Front
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, 0, 1), glm::vec2(1 * ONE_FOURTH, 1 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 0, 1), glm::vec2(1 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(0, 0, 1), glm::vec2(2 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(size, -size, size), glm::vec3(0, 0, 1), glm::vec2(2 * ONE_FOURTH, 1 * ONE_THIRD)),
+
+        // Left
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(-1, 0, 0), glm::vec2(0 * ONE_FOURTH, 1 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(-1, 0, 0), glm::vec2(0 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(-1, 0, 0), glm::vec2(1 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(-1, 0, 0), glm::vec2(1 * ONE_FOURTH, 1 * ONE_THIRD)),
+
+        // Right
+        Vertex(glm::vec3(size, -size, size), glm::vec3(1, 0, 0), glm::vec2(2 * ONE_FOURTH, 1 * ONE_THIRD)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(1, 0, 0), glm::vec2(2 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(size, size, -size), glm::vec3(1, 0, 0), glm::vec2(3 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(1, 0, 0), glm::vec2(3 * ONE_FOURTH, 1 * ONE_THIRD)),
+
+        // Top
+        Vertex(glm::vec3(size, size, -size), glm::vec3(0, 1, 0), glm::vec2(2 * ONE_FOURTH, 3 * ONE_THIRD)),
+        Vertex(glm::vec3(size, size, size), glm::vec3(0, 1, 0), glm::vec2(2 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, size), glm::vec3(0, 1, 0), glm::vec2(1 * ONE_FOURTH, 2 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, size, -size), glm::vec3(0, 1, 0), glm::vec2(1 * ONE_FOURTH, 3 * ONE_THIRD)),
+
+        // Bottom
+        Vertex(glm::vec3(size, -size, size), glm::vec3(0, -1, 0), glm::vec2(2 * ONE_FOURTH, 1 * ONE_THIRD)),
+        Vertex(glm::vec3(size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(2 * ONE_FOURTH, 0 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, -size, -size), glm::vec3(0, -1, 0), glm::vec2(1 * ONE_FOURTH, 0 * ONE_THIRD)),
+        Vertex(glm::vec3(-size, -size, size), glm::vec3(0, -1, 0), glm::vec2(1 * ONE_FOURTH, 1 * ONE_THIRD)),
+
+    }, {
+
+        1, 3, 0,
+        1, 2, 3,
+
+        5, 7, 4,
+        5, 6, 7,
+
+        9, 11, 8,
+        9, 10, 11,
+
+        13, 15, 12,
+        13, 14, 15,
+
+        17, 19, 16,
+        17, 18, 19,
+
+        21, 23, 20,
+        21, 22, 23,
+
+    });
+}
+
 // Simple rect mesh
 Mesh Mesh::rect(float xSize, float ySize, float zSize) {
     return Mesh({
@@ -154,7 +218,7 @@ Mesh Mesh::load(string path) {
 
 // Mesh constructor
 Mesh::Mesh(vector<Vertex> vertices, vector<unsigned int> indices) {
-    this->vertices = vertices;
+    this->vertices = std::move(vertices);
     this->indices = indices;
 
     load();

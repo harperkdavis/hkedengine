@@ -24,7 +24,7 @@ using namespace std;
 
 class Pipeline {
 public:
-    inline static int WIDTH = 1920, HEIGHT = 1080;
+    inline static int WIDTH = 900, HEIGHT = 600;
     inline static Scene* scene = nullptr;
 
     static void initialize();

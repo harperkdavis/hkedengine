@@ -54,12 +54,16 @@ float calcShadow(vec4 lightSpace) {
     return shadow;
 }
 
-vec3 calcDirLight(vec3 normal, vec3 albedo) {
+vec3 calcDirLight(vec3 normal, vec3 albedo, vec3 viewDir, float specular) {
     vec3 lightDir = normalize(-dirLight.direction);
     float diff = max(dot(lightDir, normal), 0);
-    vec3 diffuse = diff * albedo.rgb * dirLight.intensity;
+    vec3 diffuse = diff * albedo.rgb;
 
-    return diffuse;
+    vec3 halfwayDir = normalize(lightDir + viewDir);
+    float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
+    vec3 specul = dirLight.color.rgb * spec * specular;
+
+    return (diffuse + specul) * dirLight.intensity;
 }
 
 void main() {
@@ -73,16 +77,17 @@ void main() {
 
     vec4 vertexLighting = texture(gLightingData, vertexUV);
 
+    vec3 viewDir = normalize(viewPos - vertexPosition);
+
     // Directional Lighting
     vec3 ambient = ambientLight.rgb * vertexAlbedo.rgb;
-    vec3 diffuse = calcDirLight(vertexNormal, vertexAlbedo);
+    vec3 delight = calcDirLight(vertexNormal, vertexAlbedo, viewDir, vertexSpecular);
 
     float shadow = calcShadow(lightSpaceMatrix * vec4(vertexPosition, 1));
 
-    vec3 lighting = ambient + (1 - shadow) * diffuse;
+    vec3 lighting = ambient + (1 - shadow) * delight;
 
     // Point Lighting
-    vec3 viewDir = normalize(viewPos - vertexPosition);
     for (int i = 0; i < 64; i++) {
         PointLight pl = pointLights[i];
         float distance = length(pl.position - vertexPosition);
@@ -101,7 +106,7 @@ void main() {
         }
     }
 
-    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vec3(vertexLighting).r * 16 : lighting;
+    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + pow(vec3(vertexLighting).r, 2) * 8: lighting;
 
     frag = vec4(lit, 1);
 

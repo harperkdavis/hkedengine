@@ -24,6 +24,10 @@ glm::mat4 Camera::viewMatrix() const {
     return modelMatrix(position * -1.0f, rotation, glm::vec3(-1, -1, 1));
 }
 
+glm::mat4 Camera::rotationMatrix() const {
+    return modelMatrix(glm::vec3(0), rotation, glm::vec3(-1, -1, 1));
+}
+
 // Generates a projection matrix
 glm::mat4 Camera::projectionMatrix(int width, int height) const {
     return glm::perspective(fov, (float) width / height, nearPlane, farPlane);
@@ -53,32 +57,42 @@ glm::mat4 Thing::getModelMatrix() const {
 
 // Draws a thing
 void Thing::draw(Shader& shader) const {
-    material.texture->use();
+    material->texture->use();
 
     shader.setMat4("model", getModelMatrix());
 
-    shader.setVec4("color", material.color);
-    shader.setFloat("specular", material.specular);
-    shader.setFloat("emission", material.emission);
+    shader.setVec4("color", material->color);
+    shader.setFloat("specular", material->specular);
+    shader.setFloat("emission", material->emission);
 
     mesh.draw();
 }
 
 // Thing maker invents the thing
-Thing::Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) : material(material) {
+Thing::Thing(Mesh mesh, Material* material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
     this->mesh = mesh;
+    this->material = material;
     this->position = position;
     this->rotation = rotation;
     this->scale = scale;
 }
 
-Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.0f)) {
+Thing::Thing() {
 
 }
 
+Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.9f)) {
+    auto* material = new Material(new Texture("../resources/skybox.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE));
+    material->emission = 1.0f / 256.0f;
+    const float farFactor = 0.57735026919f;
+    skybox = Thing(Mesh::cubemap(4096.0f * farFactor), material, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1));
+}
+
 void Scene::draw(Shader& shader) {
-    for (Thing t : things) {
-        if (t.visible) {
+    skybox.position = camera->position;
+    skybox.draw(shader);
+    for (const Thing& t : things) {
+        if (t.visible && t.material != nullptr && !t.mesh.indices.empty()) {
             t.draw(shader);
         }
     }

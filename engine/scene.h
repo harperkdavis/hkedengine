@@ -63,6 +63,7 @@ public:
     float fov, nearPlane, farPlane;
 
     glm::mat4 viewMatrix() const;
+    glm::mat4 rotationMatrix() const;
     glm::mat4 projectionMatrix(int width, int height) const;
 
     Camera(glm::vec3 position, glm::vec3 rotation, float fov, float nearPlane, float farPlane);
@@ -81,14 +82,15 @@ public:
     Thing* parent = nullptr;
 
     Mesh mesh;
-    Material& material;
+    Material* material = nullptr;
 
     glm::mat4 getLocalModelMatrix() const;
     glm::mat4 getModelMatrix() const;
 
     void draw(Shader& shader) const;
 
-    Thing(Mesh mesh, Material& material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+    Thing();
+    Thing(Mesh mesh, Material* material, glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
 
 };
 
@@ -97,14 +99,17 @@ class Scene {
 public:
 
     Camera* camera;
+
+    Thing skybox;
     vector<Thing> things;
 
     glm::vec4 ambientLight = glm::vec4(0.05f, 0.05f, 0.05f, 1.0f);
     DirectionalLight dirLight;
     PointLight pointLights[64];
 
-    Thing& add(Thing thing) {
-        return things.emplace_back(thing);
+    Thing add(Thing thing) {
+        things.emplace_back(thing);
+        return thing;
     }
 
     void draw(Shader& shader);
