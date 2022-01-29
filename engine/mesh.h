@@ -42,7 +42,9 @@ public:
     static Mesh cube(float size);
     static Mesh cubemap(float size);
     static Mesh rect(float xSize, float ySize, float zSize);
+
     static Mesh load(string path);
+    static Mesh load(string path, glm::vec3 scale);
 
     vector<Vertex> vertices;
     vector<unsigned int> indices;

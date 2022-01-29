@@ -28,7 +28,7 @@ uniform sampler2D shadowMap;
 uniform mat4 lightSpaceMatrix;
 
 uniform vec4 ambientLight;
-uniform DirectionalLight dirLight;
+uniform DirectionalLight directionalLight;
 uniform PointLight[64] pointLights;
 
 float bias(float x, float bias) {
@@ -60,15 +60,15 @@ float calcShadow(vec4 lightSpace) {
 }
 
 vec3 calcDirLight(vec3 normal, vec3 albedo, vec3 viewDir, float specular) {
-    vec3 lightDir = normalize(-dirLight.direction);
+    vec3 lightDir = normalize(-directionalLight.direction);
     float diff = max(dot(lightDir, normal), 0);
-    vec3 diffuse = diff * albedo.rgb;
+    vec3 diffuse = directionalLight.color.rgb * diff * albedo.rgb;
 
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 16.0);
-    vec3 specul = dirLight.color.rgb * spec * specular;
+    vec3 specul = directionalLight.color.rgb * spec * specular;
 
-    return (diffuse + specul) * dirLight.intensity;
+    return (diffuse + specul) * directionalLight.intensity;
 }
 
 void main() {

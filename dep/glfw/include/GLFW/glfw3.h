@@ -4100,7 +4100,7 @@ GLFWAPI int glfwGetInputMode(GLFWwindow* window, int mode);
  *    content area of the window but does not restrict the cursor from leaving.
  *  - `GLFW_CURSOR_DISABLED` hides and grabs the cursor, providing virtual
  *    and unlimited cursor movement.  This is useful for implementing for
- *    example 3D camera controls.
+ *    example 3D mainCamera controls.
  *
  *  If the mode is `GLFW_STICKY_KEYS`, the value must be either `GLFW_TRUE` to
  *  enable sticky keys, or `GLFW_FALSE` to disable it.  If sticky keys are
@@ -4158,7 +4158,7 @@ GLFWAPI void glfwSetInputMode(GLFWwindow* window, int mode, int value);
  *  Raw mouse motion is closer to the actual motion of the mouse across
  *  a surface.  It is not affected by the scaling and acceleration applied to
  *  the motion of the desktop cursor.  That processing is suitable for a cursor
- *  while raw motion is better for controlling for example a 3D camera.  Because
+ *  while raw motion is better for controlling for example a 3D mainCamera.  Because
  *  of this, raw mouse motion is only provided when the cursor is disabled.
  *
  *  @return `GLFW_TRUE` if raw mouse motion is supported on the current machine,
@@ -4384,7 +4384,7 @@ GLFWAPI void glfwGetCursorPos(GLFWwindow* window, double* xpos, double* ypos);
  *  window.  The window must have input focus.  If the window does not have
  *  input focus when this function is called, it fails silently.
  *
- *  __Do not use this function__ to implement things like camera controls.  GLFW
+ *  __Do not use this function__ to implement things like mainCamera controls.  GLFW
  *  already provides the `GLFW_CURSOR_DISABLED` cursor mode that hides the
  *  cursor, transparently re-centers it and provides unconstrained cursor
  *  motion.  See @ref glfwSetInputMode for more information.

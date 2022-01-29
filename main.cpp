@@ -30,9 +30,9 @@ int main() {
     // Create the main scene
     Scene scene = Scene();
     glm::vec3 dirLightDir = glm::normalize(glm::vec3(-0.2f, -0.6f, -0.7f));
-    scene.dirLight.direction = dirLightDir;
+    scene.directionalLight.direction = dirLightDir;
 
-    scene.camera = &playerCamera;
+    scene.mainCamera = &playerCamera;
     scene.pointLights[0] = PointLight(glm::vec3(0, 1, 0), glm::vec4(1, 1, 1, 1), 1);
     scene.pointLights[1] = PointLight(glm::vec3(0, 4, -10), glm::vec4(1, 1, 1, 1), 4);
     Pipeline::scene = &scene;
@@ -42,16 +42,17 @@ int main() {
     glowy.emission = 1.0f;
     mat.specular = 0.2;
 
-    scene.add(Thing(Mesh::cube(1.0f), &mat, glm::vec3(0, -10000, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
-    scene.add(Thing(Mesh::load("../resources/models/smallarea.obj"), &mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::load("../resources/models/uvsphere.obj"), &glowy, -dirLightDir * 2000.0f, glm::vec3(0, 0, 0), glm::vec3(200, 200, 200)));
+    scene.addPhysicsBox(glm::vec3(20, 1, 20), 0, &mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
+    scene.addPhysicsSphere(1, 2, &mat, glm::vec3(4, 5, 0), glm::vec3(0, 0, 0));
+
+    // sun
+    scene.add(new StaticThing(Mesh::load("../resources/models/uvsphere.obj"), &glowy, -dirLightDir * 2000.0f, glm::vec3(0, 0, 0), glm::vec3(200, 200, 200)));
 
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;
     // Game loop
     while(!Pipeline::windowShouldClose()) {
         double startFrame = glfwGetTime();
-
         // Update framerate
         if (floor(glfwGetTime()) > lastSecond) {
             lastSecond = floor(glfwGetTime());
@@ -62,7 +63,9 @@ int main() {
             frameCount++;
         }
 
-        // Process player camera movement
+        scene.update(deltaTime);
+
+        // Process player mainCamera movement
         double updateFrame = glfwGetTime();
 
         playerCamera.rotation.x += Input::getAxisY() * MOUSE_SENSITIVITY;
@@ -74,6 +77,7 @@ int main() {
         if (playerCamera.rotation.x < -89) {
             playerCamera.rotation.x = -89;
         }
+
 
         float& rotY = playerCamera.rotation.y;
         float playerSpeed = 4.0f * (Input::key(GLFW_KEY_LEFT_SHIFT) ? 4.0f : (Input::key(GLFW_KEY_LEFT_ALT) ? 0.05f : 1.0f));
@@ -97,6 +101,18 @@ int main() {
         if (Input::key(GLFW_KEY_LEFT_CONTROL)) {
             playerCamera.position -= glm::vec3(0, 1, 0) * (float) deltaTime * playerSpeed;
         }
+
+        if (Input::mouseDown(GLFW_MOUSE_BUTTON_1)) {
+            scene.addPhysicsBox(glm::vec3(1, 1, 1), 2, &mat, playerCamera.position - glm::vec3(0, 2, 0), glm::vec3(0, 0, 0));
+        }
+        if (Input::mouseDown(GLFW_MOUSE_BUTTON_2)) {
+            glm::vec4 forward = glm::vec4(0, 0, -1, 1);
+            forward = forward * playerCamera.rotationMatrix();
+            glm::vec3 force = glm::vec3(forward.x, forward.y, forward.z);
+            PhysicsThing* thing = scene.addPhysicsSphere(1, 2, &mat, playerCamera.position + force, glm::vec3(0, 0, 0));
+            thing->setVelocity(force * 10.0f);
+        }
+
 
         updateFrame -= glfwGetTime();
 

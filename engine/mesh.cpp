@@ -193,6 +193,11 @@ Mesh Mesh::rect(float xSize, float ySize, float zSize) {
 
 // Load models using assimp
 Mesh Mesh::load(string path) {
+    return Mesh::load(path, glm::vec3(1, 1, 1));
+}
+
+// Load models using assimp
+Mesh Mesh::load(string path, glm::vec3 scale) {
     objl::Loader loader;
 
     loader.LoadFile(path);
@@ -201,7 +206,7 @@ Mesh Mesh::load(string path) {
     vector<unsigned int> indices;
 
     for (objl::Vertex v : loader.LoadedMeshes[0].Vertices) {
-        glm::vec3 position = glm::vec3(v.Position.X, v.Position.Y, v.Position.Z);
+        glm::vec3 position = glm::vec3(v.Position.X * scale.x, v.Position.Y * scale.y, v.Position.Z * scale.z);
         glm::vec3 normal = glm::vec3(v.Normal.X, v.Normal.Y, v.Normal.Z);
         glm::vec2 uv = glm::vec2(v.TextureCoordinate.X, v.TextureCoordinate.Y);
         Vertex newVertex = Vertex(position, normal, uv);

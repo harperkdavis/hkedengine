@@ -218,15 +218,15 @@ void Pipeline::preRender() {
     glViewport(0, 0, WIDTH, HEIGHT);
 
     geometryShader->use();
-    geometryShader->setMat4("projection", scene->camera->projectionMatrix(WIDTH, HEIGHT));
-    geometryShader->setMat4("view", scene->camera->viewMatrix());
+    geometryShader->setMat4("projection", scene->mainCamera->projectionMatrix(WIDTH, HEIGHT));
+    geometryShader->setMat4("view", scene->mainCamera->viewMatrix());
 
 }
 
 glm::mat4 Pipeline::getLightSpaceMatrix() {
     float nearPlane = 1.0f, farPlane = 100.0f;
     glm::mat4 lightProjection = glm::ortho(-20.0f, 20.0f, -20.0f, 20.0f, nearPlane, farPlane);
-    glm::vec3 dld = scene->dirLight.direction;
+    glm::vec3 dld = scene->directionalLight.direction;
     glm::mat4 lightView = glm::lookAt(glm::vec3(-dld.x * 20, -dld.y * 20, -dld.z * 20), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 
     return lightProjection * lightView;
@@ -235,7 +235,6 @@ glm::mat4 Pipeline::getLightSpaceMatrix() {
 // Deferred rendering geometry pass
 void Pipeline::geometryPass() {
     // Draw shadow map
-
     glViewport(0, 0, SHADOW_RESOLUTION, SHADOW_RESOLUTION);
     glBindFramebuffer(GL_FRAMEBUFFER, shadowBuffer);
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -246,7 +245,6 @@ void Pipeline::geometryPass() {
     scene->draw(*shadowShader);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     // Geometry Pass
     glViewport(0, 0, WIDTH, HEIGHT);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
@@ -268,9 +266,9 @@ void Pipeline::lightingPass() {
 
     lightingShader->use();
 
-    lightingShader->setVec3("viewPos", scene->camera->position);
+    lightingShader->setVec3("viewPos", scene->mainCamera->position);
     lightingShader->setVec4("ambientLight", scene->ambientLight);
-    lightingShader->setDirLight("dirLight", scene->dirLight.direction, scene->dirLight.color, scene->dirLight.intensity);
+    lightingShader->setDirLight("directionalLight", scene->directionalLight.direction, scene->directionalLight.color, scene->directionalLight.intensity);
     lightingShader->setMat4("lightSpaceMatrix", getLightSpaceMatrix());
     for (unsigned int i = 0; i < 64; i++) {
         PointLight& pl = scene->pointLights[i];
