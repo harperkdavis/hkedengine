@@ -15,7 +15,7 @@ glm::mat4 modelMatrix(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
     rot = glm::rotate(rot, glm::radians(rotation.z), glm::vec3(0, 0, 1));
     model *= rot;
 
-    model = glm::translate(model, position);
+    model = glm::translate(model, position / abs(scale));
     return model;
 }
 
@@ -82,7 +82,7 @@ Thing::Thing() {
 }
 
 Scene::Scene() : dirLight(DirectionalLight(glm::vec3(-0.4f, -1.0f, -0.5f), glm::vec4(1, 1, 1, 1), 0.9f)) {
-    auto* material = new Material(new Texture("../resources/skybox.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE));
+    auto* material = new Material(new Texture("../resources/skybox_default.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE));
     material->emission = 1.0f / 256.0f;
     const float farFactor = 0.57735026919f;
     skybox = Thing(Mesh::cubemap(4096.0f * farFactor), material, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1));

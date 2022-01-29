@@ -31,6 +31,11 @@ uniform vec4 ambientLight;
 uniform DirectionalLight dirLight;
 uniform PointLight[64] pointLights;
 
+float bias(float x, float bias) {
+    float k = pow(1 - bias, 3);
+    return (x * k) / (x * k - x + 1);
+}
+
 float calcShadow(vec4 lightSpace) {
 
     vec3 projCoords = lightSpace.xyz / lightSpace.w;
@@ -106,11 +111,11 @@ void main() {
         }
     }
 
-    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + pow(vec3(vertexLighting).r, 2) * 8: lighting;
+    vec3 lit = vertexLighting.r > 0 ? vertexAlbedo + vertexAlbedo * pow(vec3(vertexLighting).r, 2) * 16: lighting;
 
     frag = vec4(lit, 1);
 
-    float lum = (0.2126 * lit.r + 0.7152 * lit.g + 0.0722 * lit.b);
+    float lum = (0.299 * lit.r + 0.587 * lit.g + 0.114 * lit.b);
 
-    bright = vec4(lit * pow(exp(1.25 * min(lum, 2) - 2.5), 2), 1);
+    bright = vec4(lit * bias(min(max(lum / 1.5, 0), 1), 0.5), 1);
 }

@@ -6,7 +6,10 @@
 
 // Initializes the rendering pipeline
 void Pipeline::initialize() {
+    spdlog::info("Starting HKEDEngine v" + string(HKED_VERSION) + "...");
+
     // Create a window using GLFW
+    spdlog::info("Initializing GLFW...");
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -18,20 +21,23 @@ void Pipeline::initialize() {
 
     window = glfwCreateWindow(WIDTH, HEIGHT, &title[0], nullptr, nullptr);
     if (window == nullptr) {
-        std::cerr << "Failed to create GLFW window" << std::endl;
+        spdlog::critical("Failed to initialize GLFW!");
         glfwTerminate();
         return;
     }
     glfwMakeContextCurrent(window);
-    glfwSwapInterval(0);
+    glfwSwapInterval(1);
+    spdlog::info("GLFW initialized!");
 
+    spdlog::info("Creating key callbacks...");
     glfwSetKeyCallback(window, Input::inputKeyCallback);
     glfwSetCursorPosCallback(window, Input::inputCursorCallback);
     glfwSetMouseButtonCallback(window, Input::inputMouseCallback);
 
     // Initialize GLAD
+    spdlog::info("Initializing GLAD...");
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        std::cerr << "Failed to initialize GLAD" << std::endl;
+        spdlog::critical("Failed to initialize GLAD!");
         return;
     }
 
@@ -48,13 +54,17 @@ void Pipeline::initialize() {
 
     // Enable face culling
     glEnable(GL_CULL_FACE);
+    spdlog::info("Finished basic initialization!");
 
     createFramebuffers();
     loadShaders();
+
+    spdlog::info("Done initializing! ({}s)", glfwGetTime());
 }
 
 // Shuts down the rendering pipeline
 void Pipeline::shutdown() {
+    spdlog::info("Shutting down engine...");
     glfwTerminate();
 }
 
@@ -71,7 +81,10 @@ void Pipeline::setTitle(string gameTitle) {
 
 // Creates the graphics pipeline framebuffers
 void Pipeline::createFramebuffers() {
+    spdlog::info("Creating framebuffers...");
+
     // Create geometry buffer
+    spdlog::info("Creating geometry framebuffer...");
     glGenFramebuffers(1, &gBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 
@@ -121,10 +134,11 @@ void Pipeline::createFramebuffers() {
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Framebuffer not complete!" << std::endl;
+        spdlog::error("Geometry framebuffer not complete!");
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // HDR buffers
+    spdlog::info("Creating HDR Buffers...");
     glGenFramebuffers(1, &hdrBuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, hdrBuffer);
 
@@ -152,12 +166,12 @@ void Pipeline::createFramebuffers() {
     glDrawBuffers(2, hAttachments);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        std::cerr << "Framebuffer not complete!" << std::endl;
+        spdlog::error("HDR framebuffer not complete!");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // Bloom framebuffers
-
+    spdlog::info("Creating bloom buffers...");
     glGenFramebuffers(BLOOM_DEPTH, bloomBuffers);
     glGenTextures(BLOOM_DEPTH, bloomTextures);
     glActiveTexture(GL_TEXTURE0);
@@ -174,6 +188,9 @@ void Pipeline::createFramebuffers() {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, bloomTextures[i], 0);
     }
 
+
+    // Shadow map
+    spdlog::info("Creating shadow buffers...");
     glGenFramebuffers(1, &shadowBuffer);
 
     glGenTextures(1, &shadowMap);
@@ -190,6 +207,7 @@ void Pipeline::createFramebuffers() {
     glReadBuffer(GL_NONE);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    spdlog::info("Finished creating framebuffers!");
 }
 
 // Pre-render stage
@@ -336,6 +354,7 @@ void Pipeline::glUpdate() {
 
 // Loads the shaders
 void Pipeline::loadShaders() {
+    spdlog::info("Loading shaders...");
     // Load shaders
     geometryShader = new Shader("../shaders/std_geomv.glsl", "../shaders/std_geomf.glsl");
     lightingShader = new Shader("../shaders/stdv.glsl", "../shaders/std_lightf.glsl");
@@ -363,7 +382,7 @@ void Pipeline::loadShaders() {
     hdrShader->setInt("bloom16", 5);
     hdrShader->setInt("bloom32", 6);
     hdrShader->setInt("bloom64", 7);
-
+    spdlog::info("Shaders loaded!");
 }
 
 // Renders an on-screen quad

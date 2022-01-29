@@ -2,6 +2,8 @@
 // Created by harperkdavis on 1/22/2022.
 //
 
+#define HKED_VERSION "0.1.0-alpha.8"
+
 #ifndef HKEDENGINE_PIPELINE_H
 #define HKEDENGINE_PIPELINE_H
 
@@ -14,6 +16,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <spdlog/spdlog.h>
+
 #include "input.h"
 #include "scene.h"
 
@@ -24,7 +28,7 @@ using namespace std;
 
 class Pipeline {
 public:
-    inline static int WIDTH = 900, HEIGHT = 600;
+    inline static int WIDTH = 1920, HEIGHT = 1080;
     inline static Scene* scene = nullptr;
 
     static void initialize();
@@ -40,7 +44,7 @@ public:
 
 private:
     inline static GLFWwindow* window;
-    inline static string title = "HKED Engine 0.1.0-alpha.6";
+    inline static string title = string("HKED Engine v") + string(HKED_VERSION);
     inline static unsigned int renderQuadVao = 0, renderQuadVbo = 0;
 
     inline static const unsigned int BLOOM_DEPTH = 6;

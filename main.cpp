@@ -21,7 +21,6 @@ const float MOUSE_SENSITIVITY = 0.04f;
 
 // The main function
 int main() {
-
     // Start the rendering pipeline!
     Pipeline::initialize();
 
@@ -30,24 +29,22 @@ int main() {
 
     // Create the main scene
     Scene scene = Scene();
+    glm::vec3 dirLightDir = glm::normalize(glm::vec3(-0.2f, -0.6f, -0.7f));
+    scene.dirLight.direction = dirLightDir;
+
     scene.camera = &playerCamera;
     scene.pointLights[0] = PointLight(glm::vec3(0, 1, 0), glm::vec4(1, 1, 1, 1), 1);
     scene.pointLights[1] = PointLight(glm::vec3(0, 4, -10), glm::vec4(1, 1, 1, 1), 4);
     Pipeline::scene = &scene;
 
     Material mat = Material(new Texture("../resources/test.png"));
-    Material glowy = Material(new Texture("../resources/test.png"));
-    glowy.emission = 1;
+    Material glowy = Material(new Texture("../resources/star.png"));
+    glowy.emission = 1.0f;
     mat.specular = 0.2;
 
-    Material box = Material(new Texture("../resources/box.png"));
-    Material sky = Material(new Texture("../resources/skybox.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR_MIPMAP_LINEAR, GL_CLAMP_TO_EDGE));
-    sky.emission = 1.0f / 256.0f;
-
-    scene.add(Thing(Mesh::cube(1.0f), &mat, glm::vec3(0, -1, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
-    scene.add(Thing(Mesh::cubemap(0.5f), &sky, glm::vec3(1, 4, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::cube(0.5f), &glowy, glm::vec3(0, 4, -10), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
-    scene.add(Thing(Mesh::load("../resources/monke.obj"), &box, glm::vec3(0, 2, -1), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::cube(1.0f), &mat, glm::vec3(0, -10000, 0), glm::vec3(0, 0, 0), glm::vec3(10, 1, 10)));
+    scene.add(Thing(Mesh::load("../resources/models/smallarea.obj"), &mat, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), glm::vec3(1, 1, 1)));
+    scene.add(Thing(Mesh::load("../resources/models/uvsphere.obj"), &glowy, -dirLightDir * 2000.0f, glm::vec3(0, 0, 0), glm::vec3(200, 200, 200)));
 
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;

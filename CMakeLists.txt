@@ -11,14 +11,17 @@ set(HEADER_FILES engine/dep/obj_loader.h engine/shader.h engine/dep/stb_image.h 
 file(COPY resources DESTINATION ${dir}/cmake-build-debug)
 file(COPY shaders DESTINATION ${dir}/cmake-build-debug)
 
+add_subdirectory(${PROJECT_SOURCE_DIR}/dep/reactphysics3d)
+
 include_directories(${PROJECT_SOURCE_DIR}/dep/glfw/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/reactphysics3d/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/glm/include)
 include_directories(${PROJECT_SOURCE_DIR}/dep/GLAD/include)
+include_directories(${PROJECT_SOURCE_DIR}/dep/spdlog/include)
 
 link_directories(${PROJECT_SOURCE_DIR}/dep/glfw/lib-mingw-w64)
 link_directories(${PROJECT_SOURCE_DIR}/dep/reactphysics3d/build)
 
 add_executable(hkedengine ${SOURCE_FILES} ${HEADER_FILES})
 
-target_link_libraries(hkedengine glfw3 gdi32 opengl32)
+target_link_libraries(hkedengine ReactPhysics3D glfw3 gdi32 opengl32)
