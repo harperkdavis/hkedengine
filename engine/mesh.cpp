@@ -272,9 +272,15 @@ void Mesh::draw() const {
 // Draw instanced meshes
 void Mesh::draw(int count) const {
     glBindVertexArray(vao);
-    glDrawElementsInstanced(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, nullptr, count);
+    glDrawElementsInstanced(GL_TRIANGLES, (int) indices.size(), GL_UNSIGNED_INT, nullptr, count);
     glBindVertexArray(0);
 }
 
 // Default mesh constructor
 Mesh::Mesh() : Mesh({}, {}) {}
+
+void Mesh::unload() {
+    glDeleteVertexArrays(1, &vao);
+    glDeleteBuffers(1, &vbo);
+    glDeleteBuffers(1, &ibo);
+}

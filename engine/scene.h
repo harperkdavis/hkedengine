@@ -207,7 +207,7 @@ public:
     }
 
     void addForce(glm::vec3 force) {
-        rigidbody->applyLocalForceAtCenterOfMass(glmToRp3d(force));
+        rigidbody->applyWorldForceAtCenterOfMass(glmToRp3d(force));
     }
 
     PhysicsThing(rp3d::PhysicsWorld* world, rp3d::BodyType type, rp3d::CollisionShape* shape, Mesh mesh, Material* material, glm::vec3 position, glm::vec3 rotation);

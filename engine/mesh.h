@@ -52,6 +52,8 @@ public:
     void draw() const;
     void draw(int count) const;
 
+    void unload();
+
     Mesh();
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices);
 

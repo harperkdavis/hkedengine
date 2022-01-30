@@ -10,6 +10,7 @@
 #include "engine/mesh.h"
 #include "engine/material.h"
 #include "engine/input.h"
+#include "engine/ui.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "engine/dep/stb_image.h"
@@ -23,6 +24,9 @@ const float MOUSE_SENSITIVITY = 0.04f;
 int main() {
     // Start the rendering pipeline!
     Pipeline::initialize();
+    UI::initialize(Pipeline::WIDTH, Pipeline::HEIGHT);
+
+    Font font = Font("../resources/fonts/helvetica.fnt", "../resources/fonts/helvetica_0.png");
 
     // Set the scene
     Camera playerCamera = Camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, 0), 80.0f, 0.1f, 8192.0f);
@@ -48,8 +52,15 @@ int main() {
     // sun
     scene.add(new StaticThing(Mesh::load("../resources/models/uvsphere.obj"), &glowy, -dirLightDir * 2000.0f, glm::vec3(0, 0, 0), glm::vec3(200, 200, 200)));
 
+    Material crosshairMaterial = Material(new Texture("../resources/crosshair.png"));
+    UiThing crosshair = UiThing(UI::uiCenter(glm::vec2(32.0f)), &crosshairMaterial, glm::vec3((float) Pipeline::WIDTH / 2, (float) Pipeline::HEIGHT / 2, 0.0f), glm::vec3(0), glm::vec3(1));
+
+    UiThing text = UiThing(font.getTextMesh("Among us balls", 1.0f), font.fontMaterial, glm::vec3(400.0f, 400.0f, 0.0f), glm::vec3(0), glm::vec3(1));
+
+
     double deltaTime = 0;
     int frameCount = 0, lastSecond = 0;
+    Shader shader = Shader("../shaders/quadv.glsl", "../shaders/quadf.glsl");
     // Game loop
     while(!Pipeline::windowShouldClose()) {
         double startFrame = glfwGetTime();
@@ -109,8 +120,11 @@ int main() {
             glm::vec4 forward = glm::vec4(0, 0, -1, 1);
             forward = forward * playerCamera.rotationMatrix();
             glm::vec3 force = glm::vec3(forward.x, forward.y, forward.z);
-            PhysicsThing* thing = scene.addPhysicsSphere(1, 2, &mat, playerCamera.position + force, glm::vec3(0, 0, 0));
-            thing->setVelocity(force * 10.0f);
+            PhysicsThing* thing = scene.addPhysicsSphere(0.5f, 2, &mat, playerCamera.position + force, glm::vec3(0, 0, 0));
+            thing->setVelocity(force * 40.0f);
+        }
+        if (Input::mouse(GLFW_MOUSE_BUTTON_3)) {
+            scene.addPhysicsBox(glm::vec3(0.5f, 0.5f, 0.5f), 2, &mat, playerCamera.position - glm::vec3(0, 2, 0), glm::vec3(0, 0, 0));
         }
 
 
@@ -120,6 +134,15 @@ int main() {
         Pipeline::preRender();
         Pipeline::geometryPass();
         Pipeline::lightingPass();
+
+        UI::startPass();
+
+        crosshair.draw(*UI::uiShader);
+        text.draw(*UI::uiShader);
+
+        text.replaceMesh(font.getTextMesh("Current Time: " + to_string(glfwGetTime()), 1));
+
+        UI::endPass();
 
         Input::updateInput();
         Pipeline::glUpdate();

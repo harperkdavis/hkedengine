@@ -42,6 +42,8 @@ public:
     static void lightingPass();
     static void glUpdate();
 
+    static void renderQuad();
+
 private:
     inline static GLFWwindow* window;
     inline static string title = string("HKED Engine v") + string(HKED_VERSION);
@@ -65,7 +67,6 @@ private:
 
     static void createFramebuffers();
     static void loadShaders();
-    static void renderQuad();
 
     static glm::mat4 getLightSpaceMatrix();
 
